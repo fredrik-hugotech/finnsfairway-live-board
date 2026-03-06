@@ -1,11 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="no">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Finns Fairway Cup – Live kampoversikt</title>
   <style>
-    /* Fargevariabler og grunnleggende stiler */
     :root {
       --bg: #f5f7fb;
       --card: #ffffff;
@@ -13,25 +12,34 @@
       --muted: #6b7280;
       --brand: #203864;
       --line: #e5e7eb;
+
+      --done: #ffd9d9;     /* rød */
+      --live: #fff4bf;     /* gul */
+      --coming: #e8f5e9;   /* grønn */
+
+      --next-ring: #1f7a3d;
       --radius: 16px;
-      /* Statusfarger for liveprogrammet */
-      --upcoming: #e7f4e4; /* grønn for kommende kamper */
-      --next: #fff4cc;    /* gul for neste runde (nærmeste kommende kamper) */
-      --done: #fbeaea;    /* rød for ferdigspilte kamper */
-      --live: #fff9e6;    /* lys gul for pågående kamper */
     }
+
     * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
       background: var(--bg);
       color: var(--text);
     }
+
     .wrap {
       max-width: 1200px;
       margin: 0 auto;
       padding: 24px 16px 40px;
     }
+
     .hero {
       background: var(--card);
       border-radius: var(--radius);
@@ -39,27 +47,32 @@
       box-shadow: 0 8px 24px rgba(0,0,0,.06);
       margin-bottom: 16px;
     }
+
     h1 {
       margin: 0 0 8px;
       font-size: 28px;
       color: var(--brand);
     }
+
     .meta {
       color: var(--muted);
       font-size: 14px;
     }
+
     .controls {
       display: grid;
       grid-template-columns: 1.2fr .9fr .9fr;
       gap: 12px;
       margin: 16px 0;
     }
+
     .control {
       background: var(--card);
       border-radius: 14px;
       padding: 12px;
       box-shadow: 0 8px 24px rgba(0,0,0,.05);
     }
+
     label {
       display: block;
       font-size: 12px;
@@ -69,6 +82,7 @@
       letter-spacing: .03em;
       text-transform: uppercase;
     }
+
     input, select {
       width: 100%;
       border: 1px solid var(--line);
@@ -77,20 +91,32 @@
       font-size: 14px;
       background: #fff;
     }
+
     .board {
       background: var(--card);
       border-radius: var(--radius);
       overflow: hidden;
       box-shadow: 0 8px 24px rgba(0,0,0,.06);
     }
+
+    .count {
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--line);
+      background: #fafafa;
+    }
+
     .table-wrap {
       overflow: auto;
+      max-height: 75vh;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      table-layout: fixed; /* slik at kolonnebreddene håndteres bedre */
     }
+
     thead th {
       background: var(--brand);
       color: #fff;
@@ -101,18 +127,23 @@
       top: 0;
       z-index: 2;
     }
+
     tbody td {
       padding: 12px 14px;
       border-bottom: 1px solid var(--line);
       font-size: 14px;
       vertical-align: top;
-      word-break: break-word;
     }
-    /* Farg bakgrunn etter statusklasser */
-    tbody tr.done     { background: var(--done); }
-    tbody tr.next     { background: var(--next); }
-    tbody tr.upcoming { background: var(--upcoming); }
-    tbody tr.live     { background: var(--live); }
+
+    tbody tr.done { background: var(--done); }
+    tbody tr.live { background: var(--live); }
+    tbody tr.coming { background: #fff; }
+    tbody tr.next-coming { background: var(--coming); }
+
+    tbody tr.focus-row {
+      outline: 3px solid var(--next-ring);
+      outline-offset: -3px;
+    }
 
     .status {
       display: inline-block;
@@ -120,35 +151,39 @@
       font-weight: 700;
       border-radius: 999px;
       padding: 6px 10px;
-      background: rgba(255,255,255,.65);
+      background: rgba(255,255,255,.75);
     }
+
     .match {
       font-weight: 700;
     }
+
     .sub {
       color: var(--muted);
       font-size: 12px;
       margin-top: 4px;
     }
+
     .footer {
       color: var(--muted);
       font-size: 12px;
       margin-top: 12px;
       text-align: right;
     }
-    .count {
-      padding: 12px 14px;
-      font-size: 13px;
-      color: var(--muted);
-      border-bottom: 1px solid var(--line);
-      background: #fafafa;
-    }
-    /* Mobiltilpasning */
+
     @media (max-width: 760px) {
       .controls {
         grid-template-columns: 1fr;
       }
-      h1 { font-size: 24px; }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      thead th:nth-child(1),
+      tbody td:nth-child(1) {
+        min-width: 100px;
+      }
     }
   </style>
 </head>
@@ -156,7 +191,10 @@
   <div class="wrap">
     <section class="hero">
       <h1>Finns Fairway Cup – Live kampoversikt</h1>
-      <div class="meta">Oppdaterer automatisk hvert minutt.</div>
+      <div class="meta">
+        Ferdige kamper er røde, aktiv runde er gul, neste kommende runde er grønn.
+        Oppdaterer automatisk live.
+      </div>
     </section>
 
     <section class="controls">
@@ -180,11 +218,11 @@
 
     <section class="board">
       <div class="count" id="count"></div>
-      <div class="table-wrap">
+      <div class="table-wrap" id="tableWrap">
         <table>
           <thead>
             <tr>
-              <th>D/T</th>
+              <th>Dato</th>
               <th>Tid</th>
               <th>Bane</th>
               <th>Kamp</th>
@@ -200,22 +238,22 @@
   </div>
 
   <script>
-    /*
-      Sett inn den fulle matches-arrayen din her. Hver kamp må ha:
-      {day, date, dateLabel, start, end, field, home, away, match}
-    */
-    const matches = [];
+    const matches = PASTE_MATCHES_HERE;
 
     const searchInput = document.getElementById("search");
     const daySelect = document.getElementById("day");
     const fieldSelect = document.getElementById("field");
     const tbody = document.getElementById("tbody");
-    const countEl = document.getElementById("count");
+    const count = document.getElementById("count");
     const updated = document.getElementById("updated");
+    const tableWrap = document.getElementById("tableWrap");
+
+    let lastAutoFocusedKey = "";
 
     function unique(values) {
       return [...new Set(values)].sort((a, b) => a.localeCompare(b, "no"));
     }
+
     function fillSelect(select, values) {
       values.forEach(value => {
         const option = document.createElement("option");
@@ -224,98 +262,145 @@
         select.appendChild(option);
       });
     }
-    function getStatus(match) {
-      const now = new Date();
-      const start = new Date(match.date + "T" + match.start + ":00");
-      const end = new Date(match.date + "T" + match.end + ":00");
+
+    function toDateTime(match, timeStr) {
+      return new Date(`${match.date}T${timeStr}:00`);
+    }
+
+    function getStatus(match, now = new Date()) {
+      const start = toDateTime(match, match.start);
+      const end = toDateTime(match, match.end);
+
       if (now > end) return "done";
-      if (now >= start) return "live";
+      if (now >= start && now <= end) return "live";
       return "coming";
     }
-    function getStatusLabel(status) {
+
+    function getStatusLabel(status, isNextComing = false) {
       if (status === "done") return "Ferdig";
-      if (status === "live") return "Pågår";
+      if (status === "live") return "Pågår nå";
+      if (isNextComing) return "Neste kamp";
       return "Kommer";
     }
 
-    function initFilters() {
-      fillSelect(daySelect, unique(matches.map(m => m.day)));
-      fillSelect(fieldSelect, unique(matches.map(m => m.field)));
+    function getRowKey(match) {
+      return `${match.date}_${match.start}_${match.field}_${match.home}_${match.away}`;
     }
 
-    function render() {
+    function buildFilteredMatches() {
       const q = searchInput.value.trim().toLowerCase();
       const day = daySelect.value;
       const field = fieldSelect.value;
 
-      // Filtrering
-      let filtered = matches.filter(m => {
-        const text = (m.home + " " + m.away + " " + m.match).toLowerCase();
+      return matches.filter(m => {
+        const text = `${m.home} ${m.away} ${m.match} ${m.field} ${m.day}`.toLowerCase();
         const searchOk = !q || text.includes(q);
         const dayOk = !day || m.day === day;
         const fieldOk = !field || m.field === field;
         return searchOk && dayOk && fieldOk;
       });
+    }
 
-      // Finn tidligste kommende kamp (neste runde)
-      const upcomingTimes = filtered
-        .filter(m => getStatus(m) === "coming")
-        .map(m => new Date(m.date + "T" + m.start + ":00").getTime());
-      const nextTime = upcomingTimes.length ? Math.min(...upcomingTimes) : null;
+    function findFocusMatch(filtered, now = new Date()) {
+      const liveMatches = filtered.filter(m => getStatus(m, now) === "live");
+      if (liveMatches.length > 0) {
+        return { match: liveMatches[0], type: "live" };
+      }
 
-      // Sorter: live først, deretter kommende, til slutt ferdige; sorter innen status på starttid
-      filtered.sort((a, b) => {
-        const order = { live: 0, coming: 1, done: 2 };
-        const sa = getStatus(a);
-        const sb = getStatus(b);
-        if (order[sa] !== order[sb]) return order[sa] - order[sb];
-        const ta = new Date(a.date + "T" + a.start + ":00").getTime();
-        const tb = new Date(b.date + "T" + b.start + ":00").getTime();
-        return ta - tb;
-      });
+      const comingMatches = filtered
+        .filter(m => getStatus(m, now) === "coming")
+        .sort((a, b) => toDateTime(a, a.start) - toDateTime(b, b.start));
 
-      // Render tabell
+      if (comingMatches.length > 0) {
+        return { match: comingMatches[0], type: "next-coming" };
+      }
+
+      return null;
+    }
+
+    function render(autoScroll = true) {
+      const now = new Date();
+      const filtered = buildFilteredMatches();
+      const focusInfo = findFocusMatch(filtered, now);
+      const focusKey = focusInfo ? getRowKey(focusInfo.match) : "";
+
       tbody.innerHTML = "";
+
       filtered.forEach(m => {
-        const status = getStatus(m);
+        const status = getStatus(m, now);
+        const rowKey = getRowKey(m);
+
+        const isFocused = focusInfo && rowKey === focusKey;
+        const isNextComing = isFocused && focusInfo.type === "next-coming";
+
         const tr = document.createElement("tr");
-        // Sett klasse for radden basert på status og om det er neste kamp
-        if (status === "done") {
-          tr.className = "done";
-        } else if (status === "coming" && nextTime && new Date(m.date + "T" + m.start + ":00").getTime() === nextTime) {
-          tr.className = "next";
-        } else if (status === "coming") {
-          tr.className = "upcoming";
-        } else if (status === "live") {
-          tr.className = "live";
+        tr.dataset.key = rowKey;
+
+        if (isFocused && focusInfo.type === "live") {
+          tr.className = "live focus-row";
+        } else if (isNextComing) {
+          tr.className = "next-coming focus-row";
+        } else {
+          tr.className = status;
         }
-        // Lag kort etikett for dag/dato (tre bokstaver + dato MM.DD)
-        const dayShort = (m.day.split(" ")[0] || "").slice(0,3);
-        const dateShort = m.dateLabel.slice(0,5);
-        const dtLabel = `${dayShort} ${dateShort}`;
+
         tr.innerHTML = `
-          <td>${dtLabel}</td>
-          <td>${m.start}</td>
+          <td>${m.dateLabel}</td>
+          <td>${m.start}–${m.end}</td>
           <td>${m.field}</td>
-          <td><div class="match">${m.home} – ${m.away}</div></td>
-          <td><span class="status">${getStatusLabel(status)}</span></td>
+          <td>
+            <div class="match">${m.home} – ${m.away}</div>
+            <div class="sub">${m.day}</div>
+          </td>
+          <td>
+            <span class="status">${getStatusLabel(status, isNextComing)}</span>
+          </td>
         `;
+
         tbody.appendChild(tr);
       });
 
-      countEl.textContent = `${filtered.length} kamper vist`;
-      updated.textContent = "Sist oppdatert visning: " + new Date().toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" });
+      count.textContent = `${filtered.length} kamper vist`;
+      updated.textContent =
+        "Sist oppdatert: " +
+        now.toLocaleTimeString("no-NO", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+
+      if (autoScroll && focusKey && focusKey !== lastAutoFocusedKey) {
+        const row = tbody.querySelector(`tr[data-key="${CSS.escape(focusKey)}"]`);
+        if (row) {
+          row.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+          lastAutoFocusedKey = focusKey;
+        }
+      }
     }
 
-    searchInput.addEventListener("input", render);
-    daySelect.addEventListener("change", render);
-    fieldSelect.addEventListener("change", render);
+    fillSelect(daySelect, unique(matches.map(m => m.day)));
+    fillSelect(fieldSelect, unique(matches.map(m => m.field)));
 
-    // Initialisering
-    initFilters();
-    render();
-    // Oppdater tabellen hvert minutt
-    setInterval(render, 60000);
+    searchInput.addEventListener("input", () => {
+      lastAutoFocusedKey = "";
+      render(false);
+    });
+
+    daySelect.addEventListener("change", () => {
+      lastAutoFocusedKey = "";
+      render(true);
+    });
+
+    fieldSelect.addEventListener("change", () => {
+      lastAutoFocusedKey = "";
+      render(true);
+    });
+
+    render(true);
+    setInterval(() => render(true), 15000);
   </script>
 </body>
 </html>
