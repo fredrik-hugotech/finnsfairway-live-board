@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finns.Fairway Cup – Opplevelsesprogram</title>
+  <style>
+    :root{
+      --green:#005A4E;
+      --cream:#F7F2E6;
+      --text:#1C1C1C;
+      --muted:#6B6B6B;
+      --card:#FFFFFF;
+      --line:rgba(0,0,0,.08);
+      --accent:#E7C86A;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:var(--cream);
+      color:var(--text);
+      line-height:1.5;
+    }
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:24px 16px 48px;
+    }
+    .hero{
+      background:linear-gradient(135deg,#fff,#f9f4e8);
+      border:1px solid var(--line);
+      border-radius:28px;
+      padding:28px;
+      box-shadow:0 10px 30px rgba(0,0,0,.06);
+      margin-bottom:18px;
+    }
+    .eyebrow{
+      display:inline-block;
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--green);
+      background:rgba(0,90,78,.08);
+      padding:7px 10px;
+      border-radius:999px;
+      margin-bottom:12px;
+    }
+    h1{
+      margin:0 0 8px;
+      font-size:clamp(28px,4vw,44px);
+      line-height:1.05;
+      color:var(--green);
+    }
+    .lead{
+      margin:0;
+      max-width:780px;
+      color:var(--muted);
+      font-size:18px;
+    }
+    .legend{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:18px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid var(--line);
+      font-size:14px;
+      font-weight:600;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:50%;
+      display:inline-block;
+    }
+    .grid{
+      display:grid;
+      gap:18px;
+      grid-template-columns:repeat(3,1fr);
+    }
+    .day{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:24px;
+      overflow:hidden;
+      box-shadow:0 10px 24px rgba(0,0,0,.05);
+      min-width:0;
+    }
+    .day-head{
+      padding:20px 22px 16px;
+      background:var(--green);
+      color:#fff;
+    }
+    .day-head h2{
+      margin:0 0 4px;
+      font-size:28px;
+    }
+    .day-head p{
+      margin:0;
+      color:rgba(255,255,255,.82);
+      font-size:14px;
+    }
+    .section{
+      padding:18px 22px 20px;
+      border-top:1px solid var(--line);
+    }
+    .time{
+      display:inline-block;
+      background:#F3F6F5;
+      color:var(--green);
+      font-weight:800;
+      font-size:13px;
+      letter-spacing:.03em;
+      border-radius:999px;
+      padding:8px 12px;
+      margin-bottom:12px;
+      border:1px solid rgba(0,90,78,.08);
+    }
+    ul{
+      margin:0;
+      padding-left:18px;
+    }
+    li{
+      margin:0 0 10px;
+    }
+    li:last-child{margin-bottom:0}
+    .highlight{
+      background:#fff8df;
+      border:1px solid rgba(231,200,106,.45);
+      border-radius:18px;
+      padding:14px 16px;
+    }
+    .footer-note{
+      margin-top:20px;
+      color:var(--muted);
+      font-size:13px;
+      text-align:center;
+    }
+    @media (max-width: 920px){
+      .grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Finns.Fairway Cup</div>
+      <h1>Opplevelsesprogram</h1>
+      <p class="lead">Her er alt som skjer rundt cupen gjennom helgen – aktiviteter, show og opplevelser for spillere, familier og publikum.</p>
+      <div class="legend">
+        <span class="pill"><span class="dot" style="background:#005A4E"></span>Aktiviteter gjennom dagen</span>
+        <span class="pill"><span class="dot" style="background:#E7C86A"></span>Show og høydepunkter</span>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="day">
+        <div class="day-head">
+          <h2>Fredag</h2>
+          <p>17:00–20:00</p>
+        </div>
+        <div class="section">
+          <span class="time">17:00–20:00</span>
+          <ul>
+            <li>Rebusløp på stadion – få svarark i kiosken. Kule premier trekkes på slutten av dagen.</li>
+            <li>Prøv fotballdarten og vinn kule premier.</li>
+            <li>Prøv golfsimulatoren.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="day">
+        <div class="day-head">
+          <h2>Lørdag</h2>
+          <p>09:00–17:00</p>
+        </div>
+        <div class="section">
+          <span class="time">09:00–17:00</span>
+          <ul>
+            <li>Se og lær kule triks av tidligere verdensmester i triksing, Anders Solum.</li>
+            <li>Rebusløp på stadion – få svarark i kiosken. Kule premier trekkes på slutten av dagen.</li>
+            <li>Prøv golfsimulatoren.</li>
+          </ul>
+        </div>
+        <div class="section">
+          <span class="time">11:00–12:00</span>
+          <div class="highlight">
+            Se IK Start sin siste trening før de reiser til serieåpning av Eliteserien 2026. Vi oppfordrer barna til å lage plakater og heie på guttene.
+          </div>
+        </div>
+        <div class="section">
+          <span class="time">12:30–14:00</span>
+          <div class="highlight">
+            Bjørnis kommer med brannbilen, og hvis du er skikkelig heldig får du lov til å bli med en tur opp i stigebilen.
+          </div>
+        </div>
+        <div class="section">
+          <span class="time">14:00</span>
+          <div class="highlight">Show med Viggo Venn.</div>
+        </div>
+        <div class="section">
+          <span class="time">14:45–16:00</span>
+          <div class="highlight">Meet and greet med Viggo Venn.</div>
+        </div>
+      </article>
+
+      <article class="day">
+        <div class="day-head">
+          <h2>Søndag</h2>
+          <p>09:00–17:00</p>
+        </div>
+        <div class="section">
+          <span class="time">09:00–17:00</span>
+          <ul>
+            <li>Se og lær kule triks av tidligere verdensmester i triksing, Anders Solum.</li>
+            <li>Rebusløp på stadion – få svarark i kiosken. Kule premier trekkes på slutten av dagen.</li>
+            <li>Prøv fotballdarten og vinn kule premier.</li>
+            <li>Prøv golfsimulatoren.</li>
+          </ul>
+        </div>
+        <div class="section">
+          <span class="time">13:00</span>
+          <div class="highlight">
+            IK Start Kvinner kommer for å skrive autografer og ta bilder med alle spillerne.
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <div class="footer-note">
+      Klar for publisering som <strong>index.html</strong> i GitHub på samme måte som live-siden.
+    </div>
+  </div>
+</body>
+</html>
