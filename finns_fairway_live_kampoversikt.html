@@ -1,9 +1,7 @@
 
-  <head>
-  <style>
-.table-wrap {
+ .table-wrap {
   overflow-x: auto;
-  overflow-y: auto;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -13,31 +11,51 @@ thead th {
   z-index: 2;
 }
 
+/* MOBIL: ingen overlay, ingen sticky filter */
 @media (max-width: 760px) {
+  .topbar,
+  .controls,
+  .control,
+  .hero,
+  .board,
+  .table-wrap {
+    position: static !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+  }
 
   .controls {
+    display: grid;
     grid-template-columns: 1fr;
-    position: static;
+    gap: 12px;
+    margin: 16px 0;
+    z-index: auto !important;
   }
 
   .control {
-    position: static;
+    z-index: auto !important;
+    transform: none !important;
   }
 
   .table-wrap {
     overflow-x: auto;
-    overflow-y: auto;
+    overflow-y: visible;
+    max-height: none !important;
+    height: auto !important;
   }
 
   thead th {
-    position: static;
+    position: static !important;
   }
 
-  body {
+  body,
+  html {
     overflow-x: hidden;
     overflow-y: auto;
+    height: auto;
   }
-
 }
   </style>
   <meta charset="utf-8">
