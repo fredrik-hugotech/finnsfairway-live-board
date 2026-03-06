@@ -1,5 +1,41 @@
 <!doctype html>
 <html lang="no">
+  <style>
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+@media (max-width: 760px) {
+  .controls {
+    grid-template-columns: 1fr;
+    position: static;
+  }
+
+  .control {
+    position: static;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+
+  thead th {
+    position: static;   /* viktig: slå av sticky på mobil */
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+}
+</style>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
