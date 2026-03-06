@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finns Fairway Cup – Live kampoversikt</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #6b7280;
+      --brand: #203864;
+      --brand-2: #2f4f87;
+      --line: #e5e7eb;
+      --done: #fbe4e6;      /* rød */
+      --next: #fff4cc;      /* gul */
+      --coming: #e7f4e4;    /* grønn */
+      --radius: 18px;
+      --shadow: 0 10px 28px rgba(0,0,0,.07);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(32,56,100,.08), transparent 28%),
+        var(--bg);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+    .hero {
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 22px 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.1;
+    }
+    .meta {
+      font-size: 14px;
+      opacity: .92;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,.16);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      border: 1px solid rgba(0,0,0,.08);
+      background: #fff;
+    }
+    .dot.red { background: #f2a5ad; }
+    .dot.yellow { background: #f6da76; }
+    .dot.green { background: #9dd6a2; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      padding-top: 10px;
+      background: linear-gradient(to bottom, var(--bg) 75%, rgba(244,247,251,0));
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr auto auto;
+      gap: 12px;
+      margin: 0 0 16px;
+    }
+    .control {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 700;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+    input, select, button {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      background: #fff;
+    }
+    button {
+      cursor: pointer;
+      font-weight: 700;
+      background: var(--brand);
+      color: #fff;
+      border-color: var(--brand);
+    }
+    button.secondary {
+      background: #fff;
+      color: var(--brand);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+    }
+    .stat .label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      margin-bottom: 6px;
+    }
+    .stat .value {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .stat .sub {
+      margin-top: 5px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .board {
+      background: var(--card);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .count {
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--line);
+      background: #fafafa;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .table-wrap {
+      overflow: auto;
+      max-height: 72vh;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead th {
+      background: var(--brand);
+      color: #fff;
+      text-align: left;
+      padding: 12px 14px;
+      font-size: 13px;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    tbody td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+      vertical-align: top;
+    }
+    tbody tr.coming { background: var(--coming); }
+    tbody tr.next { background: var(--next); }
+    tbody tr.done { background: var(--done); }
+    tbody tr.focus-target {
+      outline: 3px solid rgba(32,56,100,.15);
+      outline-offset: -3px;
+    }
+    .status {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,.7);
+      white-space: nowrap;
+    }
+    .match {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .subtext {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .footer {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 12px;
+      text-align: right;
+    }
+    .empty {
+      padding: 28px 18px;
+      color: var(--muted);
+    }
+    @media (max-width: 980px) {
+      .controls { grid-template-columns: 1fr 1fr; }
+      .summary { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 700px) {
+      .controls, .summary { grid-template-columns: 1fr; }
+      h1 { font-size: 24px; }
+      .table-wrap { max-height: none; }
+      thead th:nth-child(1),
+      tbody td:nth-child(1) { min-width: 100px; }
+      thead th:nth-child(4),
+      tbody td:nth-child(4) { min-width: 240px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Finns Fairway Cup – Live kampoversikt</h1>
+      <div class="meta">Denne siden oppdaterer status live, hopper automatisk til riktig sted i kampoppsettet og markerer ferdigspilte kamper i rødt, neste runde i gult og kommende kamper i grønt.</div>
+      <div class="legend">
+        <span class="pill"><span class="dot red"></span> Ferdigspilt</span>
+        <span class="pill"><span class="dot yellow"></span> Neste runde / spilles nå</span>
+        <span class="pill"><span class="dot green"></span> Kommende kamper</span>
+      </div>
+    </section>
+
+    <div class="topbar">
+      <section class="controls">
+        <div class="control">
+          <label for="search">Søk etter lag eller klubb</label>
+          <input id="search" type="text" placeholder="Søk i hjemmelag, bortelag eller kamp">
+        </div>
+        <div class="control">
+          <label for="day">Dag</label>
+          <select id="day">
+            <option value="">Alle dager</option>
+          </select>
+        </div>
+        <div class="control">
+          <label for="field">Bane</label>
+          <select id="field">
+            <option value="">Alle baner</option>
+          </select>
+        </div>
+        <div class="control">
+          <label>&nbsp;</label>
+          <button id="jumpBtn" type="button">Hopp til aktuell runde</button>
+        </div>
+        <div class="control">
+          <label>&nbsp;</label>
+          <button id="resetBtn" class="secondary" type="button">Nullstill filter</button>
+        </div>
+      </section>
+
+      <section class="summary">
+        <div class="stat">
+          <div class="label">Viste kamper</div>
+          <div class="value" id="shownCount">0</div>
+          <div class="sub" id="totalCount">av 0 kamper</div>
+        </div>
+        <div class="stat">
+          <div class="label">Aktuell runde</div>
+          <div class="value" id="currentRound">–</div>
+          <div class="sub" id="currentRoundSub">Venter på neste kamp</div>
+        </div>
+        <div class="stat">
+          <div class="label">Nå</div>
+          <div class="value" id="clockNow">–</div>
+          <div class="sub" id="clockDate">–</div>
+        </div>
+        <div class="stat">
+          <div class="label">Sist oppdatert</div>
+          <div class="value" id="updatedAt">–</div>
+          <div class="sub">Auto-oppdatering hvert 30. sekund</div>
+        </div>
+      </section>
+    </div>
+
+    <section class="board">
+      <div class="count">
+        <div id="countText"></div>
+        <div id="liveNote"></div>
+      </div>
+      <div class="table-wrap" id="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Dato</th>
+              <th>Tid</th>
+              <th>Bane</th>
+              <th>Kamp</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div class="empty" id="emptyState" hidden>Ingen kamper matcher filtrene dine.</div>
+      </div>
+    </section>
+
+    <div class="footer" id="footerText"></div>
+  </div>
+
+  <script>
+    const matches = [{"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:00", "end": "17:18", "field": "Bane 1", "home": "Greipstad J2014", "away": "Våg J2014 - 3", "match": "Greipstad J2014 – Våg J2014 - 3"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:00", "end": "17:18", "field": "Bane 2", "home": "Amazon J2014 - 1", "away": "Våg J2014 - 2", "match": "Amazon J2014 - 1 – Våg J2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:00", "end": "17:18", "field": "Bane 3", "home": "Våg J2014 - 1", "away": "Amazon J2014 - 2", "match": "Våg J2014 - 1 – Amazon J2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:00", "end": "17:18", "field": "Bane 4", "home": "Gimletroll G2014 - 1", "away": "Hånes G2014 - 1", "match": "Gimletroll G2014 - 1 – Hånes G2014 - 1"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:00", "end": "17:18", "field": "Bane 5", "home": "Øyestad G2014 - 1", "away": "Gimletroll G2014 - 2", "match": "Øyestad G2014 - 1 – Gimletroll G2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:00", "end": "17:18", "field": "Bane 6", "home": "Øyestad G2014 - 4", "away": "Øyestad G2014 - 2", "match": "Øyestad G2014 - 4 – Øyestad G2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:20", "end": "17:38", "field": "Bane 1", "home": "Gimletroll G2014 - 3", "away": "Søgne G2014 - 1", "match": "Gimletroll G2014 - 3 – Søgne G2014 - 1"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:20", "end": "17:38", "field": "Bane 2", "home": "Hånes G2014 - 2", "away": "Gimletroll G2014 - 4", "match": "Hånes G2014 - 2 – Gimletroll G2014 - 4"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:20", "end": "17:38", "field": "Bane 3", "home": "Søgne G2014 - 2", "away": "Hånes G2014 - 3", "match": "Søgne G2014 - 2 – Hånes G2014 - 3"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:20", "end": "17:38", "field": "Bane 4", "home": "Gimletroll G2014 - 5", "away": "Grane Arendal G2014 - 2", "match": "Gimletroll G2014 - 5 – Grane Arendal G2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:20", "end": "17:38", "field": "Bane 5", "home": "Farsund og Lista IK G2014 - 1", "away": "Dvergsnes G2014 - 1", "match": "Farsund og Lista IK G2014 - 1 – Dvergsnes G2014 - 1"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:20", "end": "17:38", "field": "Bane 6", "home": "Dvergsnes G2014 - 2", "away": "Hånes G2014 - 4", "match": "Dvergsnes G2014 - 2 – Hånes G2014 - 4"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:40", "end": "17:58", "field": "Bane 1", "home": "Grane Arendal G2014 - 1", "away": "Farsund og Lista IK G2014 - 2", "match": "Grane Arendal G2014 - 1 – Farsund og Lista IK G2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:40", "end": "17:58", "field": "Bane 2", "home": "Øyestad G2014 - 3", "away": "Dvergsnes G2014 - 3", "match": "Øyestad G2014 - 3 – Dvergsnes G2014 - 3"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:40", "end": "17:58", "field": "Bane 3", "home": "Dvergsnes G2014 - 4", "away": "Grane Arendal G2014 - 3", "match": "Dvergsnes G2014 - 4 – Grane Arendal G2014 - 3"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:40", "end": "17:58", "field": "Bane 4", "home": "Øyestad G2014 - 5", "away": "Våg G2014", "match": "Øyestad G2014 - 5 – Våg G2014"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:40", "end": "17:58", "field": "Bane 5", "home": "Greipstad J2014", "away": "Amazon J2014 - 2", "match": "Greipstad J2014 – Amazon J2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "17:40", "end": "17:58", "field": "Bane 6", "home": "Amazon J2014 - 1", "away": "Våg J2014 - 3", "match": "Amazon J2014 - 1 – Våg J2014 - 3"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:00", "end": "18:18", "field": "Bane 1", "home": "Våg J2014 - 1", "away": "Våg J2014 - 2", "match": "Våg J2014 - 1 – Våg J2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:00", "end": "18:18", "field": "Bane 2", "home": "Gimletroll G2014 - 1", "away": "Våg G2014", "match": "Gimletroll G2014 - 1 – Våg G2014"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:00", "end": "18:18", "field": "Bane 3", "home": "Øyestad G2014 - 1", "away": "Hånes G2014 - 1", "match": "Øyestad G2014 - 1 – Hånes G2014 - 1"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:00", "end": "18:18", "field": "Bane 4", "home": "Øyestad G2014 - 4", "away": "Gimletroll G2014 - 2", "match": "Øyestad G2014 - 4 – Gimletroll G2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:00", "end": "18:18", "field": "Bane 5", "home": "Gimletroll G2014 - 3", "away": "Øyestad G2014 - 2", "match": "Gimletroll G2014 - 3 – Øyestad G2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:00", "end": "18:18", "field": "Bane 6", "home": "Hånes G2014 - 2", "away": "Søgne G2014 - 1", "match": "Hånes G2014 - 2 – Søgne G2014 - 1"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:20", "end": "18:38", "field": "Bane 1", "home": "Søgne G2014 - 2", "away": "Gimletroll G2014 - 4", "match": "Søgne G2014 - 2 – Gimletroll G2014 - 4"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:20", "end": "18:38", "field": "Bane 2", "home": "Gimletroll G2014 - 5", "away": "Hånes G2014 - 3", "match": "Gimletroll G2014 - 5 – Hånes G2014 - 3"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:20", "end": "18:38", "field": "Bane 3", "home": "Farsund og Lista IK G2014 - 1", "away": "Grane Arendal G2014 - 2", "match": "Farsund og Lista IK G2014 - 1 – Grane Arendal G2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:20", "end": "18:38", "field": "Bane 4", "home": "Dvergsnes G2014 - 2", "away": "Dvergsnes G2014 - 1", "match": "Dvergsnes G2014 - 2 – Dvergsnes G2014 - 1"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:20", "end": "18:38", "field": "Bane 5", "home": "Grane Arendal G2014 - 1", "away": "Hånes G2014 - 4", "match": "Grane Arendal G2014 - 1 – Hånes G2014 - 4"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:20", "end": "18:38", "field": "Bane 6", "home": "Øyestad G2014 - 3", "away": "Farsund og Lista IK G2014 - 2", "match": "Øyestad G2014 - 3 – Farsund og Lista IK G2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:40", "end": "18:58", "field": "Bane 1", "home": "Dvergsnes G2014 - 4", "away": "Dvergsnes G2014 - 3", "match": "Dvergsnes G2014 - 4 – Dvergsnes G2014 - 3"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:40", "end": "18:58", "field": "Bane 2", "home": "Øyestad G2014 - 5", "away": "Grane Arendal G2014 - 3", "match": "Øyestad G2014 - 5 – Grane Arendal G2014 - 3"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:40", "end": "18:58", "field": "Bane 3", "home": "Greipstad J2014", "away": "Våg J2014 - 2", "match": "Greipstad J2014 – Våg J2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:40", "end": "18:58", "field": "Bane 4", "home": "Amazon J2014 - 1", "away": "Amazon J2014 - 2", "match": "Amazon J2014 - 1 – Amazon J2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:40", "end": "18:58", "field": "Bane 5", "home": "Våg J2014 - 1", "away": "Våg J2014 - 3", "match": "Våg J2014 - 1 – Våg J2014 - 3"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "18:40", "end": "18:58", "field": "Bane 6", "home": "Øyestad G2014 - 1", "away": "Våg G2014", "match": "Øyestad G2014 - 1 – Våg G2014"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "19:00", "end": "19:18", "field": "Bane 1", "home": "Øyestad G2014 - 4", "away": "Hånes G2014 - 1", "match": "Øyestad G2014 - 4 – Hånes G2014 - 1"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "19:00", "end": "19:18", "field": "Bane 2", "home": "Gimletroll G2014 - 3", "away": "Gimletroll G2014 - 2", "match": "Gimletroll G2014 - 3 – Gimletroll G2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "19:00", "end": "19:18", "field": "Bane 3", "home": "Hånes G2014 - 2", "away": "Øyestad G2014 - 2", "match": "Hånes G2014 - 2 – Øyestad G2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "19:00", "end": "19:18", "field": "Bane 4", "home": "Søgne G2014 - 2", "away": "Søgne G2014 - 1", "match": "Søgne G2014 - 2 – Søgne G2014 - 1"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "19:00", "end": "19:18", "field": "Bane 5", "home": "Gimletroll G2014 - 5", "away": "Gimletroll G2014 - 4", "match": "Gimletroll G2014 - 5 – Gimletroll G2014 - 4"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "19:00", "end": "19:18", "field": "Bane 6", "home": "Farsund og Lista IK G2014 - 1", "away": "Hånes G2014 - 3", "match": "Farsund og Lista IK G2014 - 1 – Hånes G2014 - 3"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "19:20", "end": "19:38", "field": "Bane 1", "home": "Gimletroll G2014 - 1", "away": "Grane Arendal G2014 - 3", "match": "Gimletroll G2014 - 1 – Grane Arendal G2014 - 3"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "19:20", "end": "19:38", "field": "Bane 2", "home": "Dvergsnes G2014 - 2", "away": "Grane Arendal G2014 - 2", "match": "Dvergsnes G2014 - 2 – Grane Arendal G2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "19:20", "end": "19:38", "field": "Bane 3", "home": "Grane Arendal G2014 - 1", "away": "Dvergsnes G2014 - 1", "match": "Grane Arendal G2014 - 1 – Dvergsnes G2014 - 1"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "19:20", "end": "19:38", "field": "Bane 4", "home": "Øyestad G2014 - 3", "away": "Hånes G2014 - 4", "match": "Øyestad G2014 - 3 – Hånes G2014 - 4"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "19:20", "end": "19:38", "field": "Bane 5", "home": "Dvergsnes G2014 - 4", "away": "Farsund og Lista IK G2014 - 2", "match": "Dvergsnes G2014 - 4 – Farsund og Lista IK G2014 - 2"}, {"day": "Fredag", "date": "2026-03-13", "dateLabel": "13.03.2026", "start": "19:20", "end": "19:38", "field": "Bane 6", "home": "Øyestad G2014 - 5", "away": "Dvergsnes G2014 - 3", "match": "Øyestad G2014 - 5 – Dvergsnes G2014 - 3"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:00", "end": "09:18", "field": "Bane 1", "home": "Randesund G2017 - 1", "away": "Våg G2017", "match": "Randesund G2017 - 1 – Våg G2017"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:00", "end": "09:18", "field": "Bane 2", "home": "Birkenes IL G2017 - 1", "away": "Randesund G2017 - 2", "match": "Birkenes IL G2017 - 1 – Randesund G2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:00", "end": "09:18", "field": "Bane 3", "home": "Donn G2017 - 1", "away": "Birkenes IL G2017 - 2", "match": "Donn G2017 - 1 – Birkenes IL G2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:00", "end": "09:18", "field": "Bane 4", "home": "Randesund G2017 - 3", "away": "Donn G2017 - 2", "match": "Randesund G2017 - 3 – Donn G2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:00", "end": "09:18", "field": "Bane 5", "home": "Donn G2017 - 3", "away": "Randesund G2017 - 4", "match": "Donn G2017 - 3 – Randesund G2017 - 4"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:00", "end": "09:18", "field": "Bane 6", "home": "Gimletroll Fagerholt G2017 - 1", "away": "Donn G2017 - 4", "match": "Gimletroll Fagerholt G2017 - 1 – Donn G2017 - 4"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:20", "end": "09:38", "field": "Bane 1", "home": "Randesund G2017 - 5", "away": "Gimletroll Fagerholt G2017 - 2", "match": "Randesund G2017 - 5 – Gimletroll Fagerholt G2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:20", "end": "09:38", "field": "Bane 2", "home": "Hånes IF G2017", "away": "Randesund G2017 - 6", "match": "Hånes IF G2017 – Randesund G2017 - 6"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:20", "end": "09:38", "field": "Bane 3", "home": "Gimletroll Fagerholt G2017 - 3", "away": "Just IL G2017", "match": "Gimletroll Fagerholt G2017 - 3 – Just IL G2017"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:20", "end": "09:38", "field": "Bane 4", "home": "Randesund G2017 - 7", "away": "Gimletroll Fagerholt G2017 - 4", "match": "Randesund G2017 - 7 – Gimletroll Fagerholt G2017 - 4"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:20", "end": "09:38", "field": "Bane 5", "home": "Søgne Nygård G2017", "away": "Randesund G2017 - 8", "match": "Søgne Nygård G2017 – Randesund G2017 - 8"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:20", "end": "09:38", "field": "Bane 6", "home": "Vigør Grim G2017 - 1", "away": "Tveit IL G2017", "match": "Vigør Grim G2017 - 1 – Tveit IL G2017"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:40", "end": "09:58", "field": "Bane 1", "home": "Randesund G2017 - 9", "away": "Vigør Grim G2017 - 2", "match": "Randesund G2017 - 9 – Vigør Grim G2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:40", "end": "09:58", "field": "Bane 2", "home": "Gimletroll Fagerholt G2017 - 5", "away": "Donn G2017 - 5", "match": "Gimletroll Fagerholt G2017 - 5 – Donn G2017 - 5"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:40", "end": "09:58", "field": "Bane 3", "home": "Hånes IF J2017 - 1", "away": "Vigør J2017", "match": "Hånes IF J2017 - 1 – Vigør J2017"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:40", "end": "09:58", "field": "Bane 4", "home": "FK Donn J2017 - 1", "away": "Hånes IF J2017 - 2", "match": "FK Donn J2017 - 1 – Hånes IF J2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:40", "end": "09:58", "field": "Bane 5", "home": "Randesund J2017 - 1", "away": "FK Donn J2017 - 2", "match": "Randesund J2017 - 1 – FK Donn J2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:40", "end": "09:58", "field": "Bane 6", "home": "Flekkerøy IL J2017", "away": "Randesund J2017 - 2", "match": "Flekkerøy IL J2017 – Randesund J2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:00", "end": "10:18", "field": "Bane 1", "home": "Gimletroll J2018 - 1", "away": "FK Vigør J2018", "match": "Gimletroll J2018 - 1 – FK Vigør J2018"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:00", "end": "10:18", "field": "Bane 2", "home": "FK Donn J2018 - 1", "away": "Gimletroll J2018 - 2", "match": "FK Donn J2018 - 1 – Gimletroll J2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:00", "end": "10:18", "field": "Bane 3", "home": "Lillesand IL J2018", "away": "FK Donn J2018 - 2", "match": "Lillesand IL J2018 – FK Donn J2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:00", "end": "10:18", "field": "Bane 4", "home": "FK Donn G2018 - 1", "away": "Gimletroll G2018 - 4", "match": "FK Donn G2018 - 1 – Gimletroll G2018 - 4"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:00", "end": "10:18", "field": "Bane 5", "home": "Randesund IL G2018 - 1", "away": "FK Donn G2018 - 2", "match": "Randesund IL G2018 - 1 – FK Donn G2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:00", "end": "10:18", "field": "Bane 6", "home": "Gimletroll G2018 - 1", "away": "Randesund IL G2018 - 2", "match": "Gimletroll G2018 - 1 – Randesund IL G2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:20", "end": "10:38", "field": "Bane 1", "home": "FK Donn G2018 - 4", "away": "Gimletroll G2018 - 2", "match": "FK Donn G2018 - 4 – Gimletroll G2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:20", "end": "10:38", "field": "Bane 2", "home": "Våg FK G2018 - 1", "away": "FK Donn G2018 - 3", "match": "Våg FK G2018 - 1 – FK Donn G2018 - 3"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:20", "end": "10:38", "field": "Bane 3", "home": "Gimletroll G2018 - 3", "away": "Våg FK G2018 - 2", "match": "Gimletroll G2018 - 3 – Våg FK G2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:20", "end": "10:38", "field": "Bane 4", "home": "FK Donn G2018 - 5", "away": "Randesund IL G2018 - 3", "match": "FK Donn G2018 - 5 – Randesund IL G2018 - 3"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:20", "end": "10:38", "field": "Bane 5", "home": "Vindbjart G2018 - 1", "away": "FK Vigør G2018", "match": "Vindbjart G2018 - 1 – FK Vigør G2018"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:20", "end": "10:38", "field": "Bane 6", "home": "Randesund G2017 - 1", "away": "Donn G2017 - 5", "match": "Randesund G2017 - 1 – Donn G2017 - 5"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "12:40", "end": "12:58", "field": "Bane 1", "home": "Birkenes IL G2017 - 1", "away": "Våg G2017", "match": "Birkenes IL G2017 - 1 – Våg G2017"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "12:40", "end": "12:58", "field": "Bane 2", "home": "Donn G2017 - 1", "away": "Randesund G2017 - 2", "match": "Donn G2017 - 1 – Randesund G2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "12:40", "end": "12:58", "field": "Bane 3", "home": "Randesund G2017 - 3", "away": "Birkenes IL G2017 - 2", "match": "Randesund G2017 - 3 – Birkenes IL G2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "12:40", "end": "12:58", "field": "Bane 4", "home": "Donn G2017 - 3", "away": "Donn G2017 - 2", "match": "Donn G2017 - 3 – Donn G2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "12:40", "end": "12:58", "field": "Bane 5", "home": "Gimletroll Fagerholt G2017 - 1", "away": "Randesund G2017 - 4", "match": "Gimletroll Fagerholt G2017 - 1 – Randesund G2017 - 4"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "12:40", "end": "12:58", "field": "Bane 6", "home": "Randesund G2017 - 5", "away": "Donn G2017 - 4", "match": "Randesund G2017 - 5 – Donn G2017 - 4"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:00", "end": "13:18", "field": "Bane 1", "home": "Hånes IF G2017", "away": "Gimletroll Fagerholt G2017 - 2", "match": "Hånes IF G2017 – Gimletroll Fagerholt G2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:00", "end": "13:18", "field": "Bane 2", "home": "Gimletroll Fagerholt G2017 - 3", "away": "Randesund G2017 - 6", "match": "Gimletroll Fagerholt G2017 - 3 – Randesund G2017 - 6"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:00", "end": "13:18", "field": "Bane 3", "home": "Randesund G2017 - 7", "away": "Just IL G2017", "match": "Randesund G2017 - 7 – Just IL G2017"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:00", "end": "13:18", "field": "Bane 4", "home": "Søgne Nygård G2017", "away": "Gimletroll Fagerholt G2017 - 4", "match": "Søgne Nygård G2017 – Gimletroll Fagerholt G2017 - 4"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:00", "end": "13:18", "field": "Bane 5", "home": "Vigør Grim G2017 - 1", "away": "Randesund G2017 - 8", "match": "Vigør Grim G2017 - 1 – Randesund G2017 - 8"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:00", "end": "13:18", "field": "Bane 6", "home": "Randesund G2017 - 9", "away": "Tveit IL G2017", "match": "Randesund G2017 - 9 – Tveit IL G2017"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:20", "end": "13:38", "field": "Bane 1", "home": "Gimletroll Fagerholt G2017 - 5", "away": "Vigør Grim G2017 - 2", "match": "Gimletroll Fagerholt G2017 - 5 – Vigør Grim G2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:20", "end": "13:38", "field": "Bane 2", "home": "Hånes IF J2017 - 1", "away": "FK Donn J2017 - 3", "match": "Hånes IF J2017 - 1 – FK Donn J2017 - 3"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:20", "end": "13:38", "field": "Bane 3", "home": "FK Donn J2017 - 1", "away": "Vigør J2017", "match": "FK Donn J2017 - 1 – Vigør J2017"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:20", "end": "13:38", "field": "Bane 4", "home": "Randesund J2017 - 1", "away": "Hånes IF J2017 - 2", "match": "Randesund J2017 - 1 – Hånes IF J2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:20", "end": "13:38", "field": "Bane 5", "home": "Flekkerøy IL J2017", "away": "FK Donn J2017 - 2", "match": "Flekkerøy IL J2017 – FK Donn J2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:20", "end": "13:38", "field": "Bane 6", "home": "Gimletroll J2018 - 1", "away": "Iveland IL J2018", "match": "Gimletroll J2018 - 1 – Iveland IL J2018"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:40", "end": "13:58", "field": "Bane 1", "home": "FK Donn J2018 - 1", "away": "FK Vigør J2018", "match": "FK Donn J2018 - 1 – FK Vigør J2018"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:40", "end": "13:58", "field": "Bane 2", "home": "Lillesand IL J2018", "away": "Gimletroll J2018 - 2", "match": "Lillesand IL J2018 – Gimletroll J2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:40", "end": "13:58", "field": "Bane 3", "home": "FK Donn G2018 - 1", "away": "Vindbjart G2018 - 2", "match": "FK Donn G2018 - 1 – Vindbjart G2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:40", "end": "13:58", "field": "Bane 4", "home": "Randesund IL G2018 - 1", "away": "Gimletroll G2018 - 4", "match": "Randesund IL G2018 - 1 – Gimletroll G2018 - 4"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:40", "end": "13:58", "field": "Bane 5", "home": "Gimletroll G2018 - 1", "away": "FK Donn G2018 - 2", "match": "Gimletroll G2018 - 1 – FK Donn G2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:40", "end": "13:58", "field": "Bane 6", "home": "FK Donn G2018 - 4", "away": "Randesund IL G2018 - 2", "match": "FK Donn G2018 - 4 – Randesund IL G2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "14:40", "end": "14:58", "field": "Bane 1", "home": "Våg FK G2018 - 1", "away": "Gimletroll G2018 - 2", "match": "Våg FK G2018 - 1 – Gimletroll G2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "14:40", "end": "14:58", "field": "Bane 2", "home": "Gimletroll G2018 - 3", "away": "FK Donn G2018 - 3", "match": "Gimletroll G2018 - 3 – FK Donn G2018 - 3"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "14:40", "end": "14:58", "field": "Bane 3", "home": "FK Donn G2018 - 5", "away": "Våg FK G2018 - 2", "match": "FK Donn G2018 - 5 – Våg FK G2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "14:40", "end": "14:58", "field": "Bane 4", "home": "Vindbjart G2018 - 1", "away": "Randesund IL G2018 - 3", "match": "Vindbjart G2018 - 1 – Randesund IL G2018 - 3"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "14:40", "end": "14:58", "field": "Bane 5", "home": "Randesund G2017 - 1", "away": "Vigør Grim G2017 - 2", "match": "Randesund G2017 - 1 – Vigør Grim G2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "14:40", "end": "14:58", "field": "Bane 6", "home": "Birkenes IL G2017 - 1", "away": "Donn G2017 - 5", "match": "Birkenes IL G2017 - 1 – Donn G2017 - 5"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:00", "end": "15:18", "field": "Bane 1", "home": "Donn G2017 - 1", "away": "Våg G2017", "match": "Donn G2017 - 1 – Våg G2017"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:00", "end": "15:18", "field": "Bane 2", "home": "Randesund G2017 - 3", "away": "Randesund G2017 - 2", "match": "Randesund G2017 - 3 – Randesund G2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:00", "end": "15:18", "field": "Bane 3", "home": "Donn G2017 - 3", "away": "Birkenes IL G2017 - 2", "match": "Donn G2017 - 3 – Birkenes IL G2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:00", "end": "15:18", "field": "Bane 4", "home": "Gimletroll Fagerholt G2017 - 1", "away": "Donn G2017 - 2", "match": "Gimletroll Fagerholt G2017 - 1 – Donn G2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:00", "end": "15:18", "field": "Bane 5", "home": "Randesund G2017 - 5", "away": "Randesund G2017 - 4", "match": "Randesund G2017 - 5 – Randesund G2017 - 4"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:00", "end": "15:18", "field": "Bane 6", "home": "Hånes IF G2017", "away": "Donn G2017 - 4", "match": "Hånes IF G2017 – Donn G2017 - 4"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:20", "end": "15:38", "field": "Bane 1", "home": "Gimletroll Fagerholt G2017 - 3", "away": "Gimletroll Fagerholt G2017 - 2", "match": "Gimletroll Fagerholt G2017 - 3 – Gimletroll Fagerholt G2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:20", "end": "15:38", "field": "Bane 2", "home": "Randesund G2017 - 7", "away": "Randesund G2017 - 6", "match": "Randesund G2017 - 7 – Randesund G2017 - 6"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:20", "end": "15:38", "field": "Bane 3", "home": "Søgne Nygård G2017", "away": "Just IL G2017", "match": "Søgne Nygård G2017 – Just IL G2017"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:20", "end": "15:38", "field": "Bane 4", "home": "Vigør Grim G2017 - 1", "away": "Gimletroll Fagerholt G2017 - 4", "match": "Vigør Grim G2017 - 1 – Gimletroll Fagerholt G2017 - 4"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:20", "end": "15:38", "field": "Bane 5", "home": "Randesund G2017 - 9", "away": "Randesund G2017 - 8", "match": "Randesund G2017 - 9 – Randesund G2017 - 8"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:20", "end": "15:38", "field": "Bane 6", "home": "Gimletroll Fagerholt G2017 - 5", "away": "Tveit IL G2017", "match": "Gimletroll Fagerholt G2017 - 5 – Tveit IL G2017"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:40", "end": "15:58", "field": "Bane 1", "home": "Hånes IF J2017 - 1", "away": "Randesund J2017 - 2", "match": "Hånes IF J2017 - 1 – Randesund J2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:40", "end": "15:58", "field": "Bane 2", "home": "FK Donn J2017 - 1", "away": "FK Donn J2017 - 3", "match": "FK Donn J2017 - 1 – FK Donn J2017 - 3"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:40", "end": "15:58", "field": "Bane 3", "home": "Randesund J2017 - 1", "away": "Vigør J2017", "match": "Randesund J2017 - 1 – Vigør J2017"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:40", "end": "15:58", "field": "Bane 4", "home": "Flekkerøy IL J2017", "away": "Hånes IF J2017 - 2", "match": "Flekkerøy IL J2017 – Hånes IF J2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:40", "end": "15:58", "field": "Bane 5", "home": "Gimletroll J2018 - 1", "away": "FK Donn J2018 - 2", "match": "Gimletroll J2018 - 1 – FK Donn J2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:40", "end": "15:58", "field": "Bane 6", "home": "FK Donn J2018 - 1", "away": "Iveland IL J2018", "match": "FK Donn J2018 - 1 – Iveland IL J2018"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:00", "end": "16:18", "field": "Bane 1", "home": "Lillesand IL J2018", "away": "FK Vigør J2018", "match": "Lillesand IL J2018 – FK Vigør J2018"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:00", "end": "16:18", "field": "Bane 2", "home": "FK Donn G2018 - 1", "away": "FK Vigør G2018", "match": "FK Donn G2018 - 1 – FK Vigør G2018"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:00", "end": "16:18", "field": "Bane 3", "home": "Randesund IL G2018 - 1", "away": "Vindbjart G2018 - 2", "match": "Randesund IL G2018 - 1 – Vindbjart G2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:00", "end": "16:18", "field": "Bane 4", "home": "Gimletroll G2018 - 1", "away": "Gimletroll G2018 - 4", "match": "Gimletroll G2018 - 1 – Gimletroll G2018 - 4"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:00", "end": "16:18", "field": "Bane 5", "home": "FK Donn G2018 - 4", "away": "FK Donn G2018 - 2", "match": "FK Donn G2018 - 4 – FK Donn G2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:00", "end": "16:18", "field": "Bane 6", "home": "Våg FK G2018 - 1", "away": "Randesund IL G2018 - 2", "match": "Våg FK G2018 - 1 – Randesund IL G2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:20", "end": "16:38", "field": "Bane 1", "home": "Gimletroll G2018 - 3", "away": "Gimletroll G2018 - 2", "match": "Gimletroll G2018 - 3 – Gimletroll G2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:20", "end": "16:38", "field": "Bane 2", "home": "FK Donn G2018 - 5", "away": "FK Donn G2018 - 3", "match": "FK Donn G2018 - 5 – FK Donn G2018 - 3"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:20", "end": "16:38", "field": "Bane 3", "home": "Vindbjart G2018 - 1", "away": "Våg FK G2018 - 2", "match": "Vindbjart G2018 - 1 – Våg FK G2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:20", "end": "16:38", "field": "Bane 4", "home": "FK Donn J2017 - 3", "away": "Randesund J2017 - 2", "match": "FK Donn J2017 - 3 – Randesund J2017 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:20", "end": "16:38", "field": "Bane 5", "home": "FK Donn J2017 - 2", "away": "Flekkerøy IL J2017", "match": "FK Donn J2017 - 2 – Flekkerøy IL J2017"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:40", "end": "16:58", "field": "Bane 1", "home": "Iveland IL J2018", "away": "FK Donn J2018 - 2", "match": "Iveland IL J2018 – FK Donn J2018 - 2"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:40", "end": "16:58", "field": "Bane 2", "home": "Gimletroll J2018 - 2", "away": "FK Vigør J2018", "match": "Gimletroll J2018 - 2 – FK Vigør J2018"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:40", "end": "16:58", "field": "Bane 3", "home": "Vindbjart G2018 - 2", "away": "FK Vigør G2018", "match": "Vindbjart G2018 - 2 – FK Vigør G2018"}, {"day": "Lørdag", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:40", "end": "16:58", "field": "Bane 4", "home": "Randesund IL G2018 - 3", "away": "FK Donn G2018 - 4", "match": "Randesund IL G2018 - 3 – FK Donn G2018 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:00", "end": "09:08", "field": "Treerbane 1", "home": "FK Donn J2019 - 1", "away": "Hånes IF J2019 - 3", "match": "FK Donn J2019 - 1 – Hånes IF J2019 - 3"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:00", "end": "09:08", "field": "Treerbane 2", "home": "Gimletroll Fagerholt J2019 - 1", "away": "FK Donn J2019 - 2", "match": "Gimletroll Fagerholt J2019 - 1 – FK Donn J2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:00", "end": "09:08", "field": "Treerbane 3", "home": "Hånes IF J2019 - 1", "away": "Gimletroll Fagerholt J2019 - 2", "match": "Hånes IF J2019 - 1 – Gimletroll Fagerholt J2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:10", "end": "09:18", "field": "Treerbane 1", "home": "IK Gimletroll J2019 - 1", "away": "Hånes IF J2019 - 2", "match": "IK Gimletroll J2019 - 1 – Hånes IF J2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:10", "end": "09:18", "field": "Treerbane 2", "home": "FK Donn J2019 - 3", "away": "IK Gimletroll J2019 - 2", "match": "FK Donn J2019 - 3 – IK Gimletroll J2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:10", "end": "09:18", "field": "Treerbane 3", "home": "Gimletroll Fagerholt J2019 - 3", "away": "FK Vigør J2019 - 1", "match": "Gimletroll Fagerholt J2019 - 3 – FK Vigør J2019 - 1"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:20", "end": "09:28", "field": "Treerbane 1", "home": "Randesund J2019 - 1", "away": "Gimletroll Fagerholt J2019 - 4", "match": "Randesund J2019 - 1 – Gimletroll Fagerholt J2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:20", "end": "09:28", "field": "Treerbane 2", "home": "IK Gimletroll J2019 - 3", "away": "Randesund J2019 - 2", "match": "IK Gimletroll J2019 - 3 – Randesund J2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:20", "end": "09:28", "field": "Treerbane 3", "home": "FK Vigør J2019 - 2", "away": "IK Gimletroll J2019 - 4", "match": "FK Vigør J2019 - 2 – IK Gimletroll J2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:30", "end": "09:38", "field": "Treerbane 1", "home": "Gimletroll Fagerholt J2019 - 5", "away": "FK Våg J2019", "match": "Gimletroll Fagerholt J2019 - 5 – FK Våg J2019"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:30", "end": "09:38", "field": "Treerbane 2", "home": "Dvergsnes G2019", "away": "Våg FK G2019 - 5", "match": "Dvergsnes G2019 – Våg FK G2019 - 5"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:30", "end": "09:38", "field": "Treerbane 3", "home": "FK Donn G2019 - 1", "away": "Greipstad G2019 - 3", "match": "FK Donn G2019 - 1 – Greipstad G2019 - 3"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:40", "end": "09:48", "field": "Treerbane 1", "home": "Gimletroll G2019 - 1", "away": "FK Donn G2019 - 2", "match": "Gimletroll G2019 - 1 – FK Donn G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:40", "end": "09:48", "field": "Treerbane 2", "home": "Grane Arendal Fotball G2019 - 1", "away": "Gimletroll G2019 - 2", "match": "Grane Arendal Fotball G2019 - 1 – Gimletroll G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:40", "end": "09:48", "field": "Treerbane 3", "home": "FK Donn G2019 - 3", "away": "Grane Arendal Fotball G2019 - 2", "match": "FK Donn G2019 - 3 – Grane Arendal Fotball G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:50", "end": "09:58", "field": "Treerbane 1", "home": "Gimletroll G2019 - 3", "away": "FK Donn G2019 - 4", "match": "Gimletroll G2019 - 3 – FK Donn G2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:50", "end": "09:58", "field": "Treerbane 2", "home": "Grane Arendal Fotball G2019 - 3", "away": "Gimletroll G2019 - 4", "match": "Grane Arendal Fotball G2019 - 3 – Gimletroll G2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "09:50", "end": "09:58", "field": "Treerbane 3", "home": "FK Donn G2019 - 5", "away": "Grane Arendal Fotball G2019 - 4", "match": "FK Donn G2019 - 5 – Grane Arendal Fotball G2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:00", "end": "10:08", "field": "Treerbane 1", "home": "Gimletroll G2019 - 5", "away": "FK Donn G2019 - 6", "match": "Gimletroll G2019 - 5 – FK Donn G2019 - 6"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:00", "end": "10:08", "field": "Treerbane 2", "home": "Greipstad G2019 - 1", "away": "Gimletroll G2019 - 6", "match": "Greipstad G2019 - 1 – Gimletroll G2019 - 6"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:00", "end": "10:08", "field": "Treerbane 3", "home": "FK Donn G2019 - 7", "away": "Greipstad G2019 - 2", "match": "FK Donn G2019 - 7 – Greipstad G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:10", "end": "10:18", "field": "Treerbane 1", "home": "Gimletroll G2019 - 7", "away": "FK Donn G2019 - 8", "match": "Gimletroll G2019 - 7 – FK Donn G2019 - 8"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:10", "end": "10:18", "field": "Treerbane 2", "home": "Våg FK G2019 - 1", "away": "Gimletroll G2019 - 8", "match": "Våg FK G2019 - 1 – Gimletroll G2019 - 8"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:10", "end": "10:18", "field": "Treerbane 3", "home": "Søgne FK Nygård G2019 - 1", "away": "Våg FK G2019 - 2", "match": "Søgne FK Nygård G2019 - 1 – Våg FK G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:20", "end": "10:28", "field": "Treerbane 1", "home": "Gimletroll G2019 - 9", "away": "Søgne FK Nygård G2019 - 2", "match": "Gimletroll G2019 - 9 – Søgne FK Nygård G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:20", "end": "10:28", "field": "Treerbane 2", "home": "Grane Arendal Fotball G2019 - 5", "away": "Gimletroll G2019 - 10", "match": "Grane Arendal Fotball G2019 - 5 – Gimletroll G2019 - 10"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "10:20", "end": "10:28", "field": "Treerbane 3", "home": "Våg FK G2019 - 3", "away": "Våg FK G2019 - 4", "match": "Våg FK G2019 - 3 – Våg FK G2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "12:40", "end": "12:48", "field": "Treerbane 1", "home": "FK Donn J2019 - 1", "away": "Gimletroll Fagerholt J2019 - 6", "match": "FK Donn J2019 - 1 – Gimletroll Fagerholt J2019 - 6"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "12:40", "end": "12:48", "field": "Treerbane 2", "home": "Gimletroll Fagerholt J2019 - 1", "away": "Hånes IF J2019 - 3", "match": "Gimletroll Fagerholt J2019 - 1 – Hånes IF J2019 - 3"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "12:40", "end": "12:48", "field": "Treerbane 3", "home": "Hånes IF J2019 - 1", "away": "FK Donn J2019 - 2", "match": "Hånes IF J2019 - 1 – FK Donn J2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "12:50", "end": "12:58", "field": "Treerbane 1", "home": "IK Gimletroll J2019 - 1", "away": "Gimletroll Fagerholt J2019 - 2", "match": "IK Gimletroll J2019 - 1 – Gimletroll Fagerholt J2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "12:50", "end": "12:58", "field": "Treerbane 2", "home": "FK Donn J2019 - 3", "away": "Hånes IF J2019 - 2", "match": "FK Donn J2019 - 3 – Hånes IF J2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "12:50", "end": "12:58", "field": "Treerbane 3", "home": "Gimletroll Fagerholt J2019 - 3", "away": "IK Gimletroll J2019 - 2", "match": "Gimletroll Fagerholt J2019 - 3 – IK Gimletroll J2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:00", "end": "13:08", "field": "Treerbane 1", "home": "Randesund J2019 - 1", "away": "FK Vigør J2019 - 1", "match": "Randesund J2019 - 1 – FK Vigør J2019 - 1"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:00", "end": "13:08", "field": "Treerbane 2", "home": "IK Gimletroll J2019 - 3", "away": "Gimletroll Fagerholt J2019 - 4", "match": "IK Gimletroll J2019 - 3 – Gimletroll Fagerholt J2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:00", "end": "13:08", "field": "Treerbane 3", "home": "FK Vigør J2019 - 2", "away": "Randesund J2019 - 2", "match": "FK Vigør J2019 - 2 – Randesund J2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:10", "end": "13:18", "field": "Treerbane 1", "home": "Gimletroll Fagerholt J2019 - 5", "away": "IK Gimletroll J2019 - 4", "match": "Gimletroll Fagerholt J2019 - 5 – IK Gimletroll J2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:10", "end": "13:18", "field": "Treerbane 2", "home": "Dvergsnes G2019", "away": "Våg FK G2019 - 4", "match": "Dvergsnes G2019 – Våg FK G2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:10", "end": "13:18", "field": "Treerbane 3", "home": "FK Donn G2019 - 1", "away": "Våg FK G2019 - 5", "match": "FK Donn G2019 - 1 – Våg FK G2019 - 5"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:20", "end": "13:28", "field": "Treerbane 1", "home": "Gimletroll G2019 - 1", "away": "Greipstad G2019 - 3", "match": "Gimletroll G2019 - 1 – Greipstad G2019 - 3"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:20", "end": "13:28", "field": "Treerbane 2", "home": "Grane Arendal Fotball G2019 - 1", "away": "FK Donn G2019 - 2", "match": "Grane Arendal Fotball G2019 - 1 – FK Donn G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:20", "end": "13:28", "field": "Treerbane 3", "home": "FK Donn G2019 - 3", "away": "Gimletroll G2019 - 2", "match": "FK Donn G2019 - 3 – Gimletroll G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:30", "end": "13:38", "field": "Treerbane 1", "home": "Gimletroll G2019 - 3", "away": "Grane Arendal Fotball G2019 - 2", "match": "Gimletroll G2019 - 3 – Grane Arendal Fotball G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:30", "end": "13:38", "field": "Treerbane 2", "home": "Grane Arendal Fotball G2019 - 3", "away": "FK Donn G2019 - 4", "match": "Grane Arendal Fotball G2019 - 3 – FK Donn G2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:30", "end": "13:38", "field": "Treerbane 3", "home": "FK Donn G2019 - 5", "away": "Gimletroll G2019 - 4", "match": "FK Donn G2019 - 5 – Gimletroll G2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:40", "end": "13:48", "field": "Treerbane 1", "home": "Gimletroll G2019 - 5", "away": "Grane Arendal Fotball G2019 - 4", "match": "Gimletroll G2019 - 5 – Grane Arendal Fotball G2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:40", "end": "13:48", "field": "Treerbane 2", "home": "Greipstad G2019 - 1", "away": "FK Donn G2019 - 6", "match": "Greipstad G2019 - 1 – FK Donn G2019 - 6"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:40", "end": "13:48", "field": "Treerbane 3", "home": "FK Donn G2019 - 7", "away": "Gimletroll G2019 - 6", "match": "FK Donn G2019 - 7 – Gimletroll G2019 - 6"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:50", "end": "13:58", "field": "Treerbane 1", "home": "Gimletroll G2019 - 7", "away": "Greipstad G2019 - 2", "match": "Gimletroll G2019 - 7 – Greipstad G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:50", "end": "13:58", "field": "Treerbane 2", "home": "Våg FK G2019 - 1", "away": "FK Donn G2019 - 8", "match": "Våg FK G2019 - 1 – FK Donn G2019 - 8"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "13:50", "end": "13:58", "field": "Treerbane 3", "home": "Søgne FK Nygård G2019 - 1", "away": "Gimletroll G2019 - 8", "match": "Søgne FK Nygård G2019 - 1 – Gimletroll G2019 - 8"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "14:40", "end": "14:48", "field": "Treerbane 1", "home": "Gimletroll G2019 - 9", "away": "Våg FK G2019 - 2", "match": "Gimletroll G2019 - 9 – Våg FK G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "14:40", "end": "14:48", "field": "Treerbane 2", "home": "Grane Arendal Fotball G2019 - 5", "away": "Søgne FK Nygård G2019 - 2", "match": "Grane Arendal Fotball G2019 - 5 – Søgne FK Nygård G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "14:40", "end": "14:48", "field": "Treerbane 3", "home": "Våg FK G2019 - 3", "away": "Gimletroll G2019 - 10", "match": "Våg FK G2019 - 3 – Gimletroll G2019 - 10"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "14:50", "end": "14:58", "field": "Treerbane 1", "home": "FK Donn J2019 - 1", "away": "FK Våg J2019", "match": "FK Donn J2019 - 1 – FK Våg J2019"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "14:50", "end": "14:58", "field": "Treerbane 2", "home": "Gimletroll Fagerholt J2019 - 1", "away": "Gimletroll Fagerholt J2019 - 6", "match": "Gimletroll Fagerholt J2019 - 1 – Gimletroll Fagerholt J2019 - 6"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "14:50", "end": "14:58", "field": "Treerbane 3", "home": "Hånes IF J2019 - 1", "away": "Hånes IF J2019 - 3", "match": "Hånes IF J2019 - 1 – Hånes IF J2019 - 3"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:00", "end": "15:08", "field": "Treerbane 1", "home": "IK Gimletroll J2019 - 1", "away": "FK Donn J2019 - 2", "match": "IK Gimletroll J2019 - 1 – FK Donn J2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:00", "end": "15:08", "field": "Treerbane 2", "home": "FK Donn J2019 - 3", "away": "Gimletroll Fagerholt J2019 - 2", "match": "FK Donn J2019 - 3 – Gimletroll Fagerholt J2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:00", "end": "15:08", "field": "Treerbane 3", "home": "Gimletroll Fagerholt J2019 - 3", "away": "Hånes IF J2019 - 2", "match": "Gimletroll Fagerholt J2019 - 3 – Hånes IF J2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:10", "end": "15:18", "field": "Treerbane 1", "home": "Randesund J2019 - 1", "away": "IK Gimletroll J2019 - 2", "match": "Randesund J2019 - 1 – IK Gimletroll J2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:10", "end": "15:18", "field": "Treerbane 2", "home": "IK Gimletroll J2019 - 3", "away": "FK Vigør J2019 - 1", "match": "IK Gimletroll J2019 - 3 – FK Vigør J2019 - 1"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:10", "end": "15:18", "field": "Treerbane 3", "home": "FK Vigør J2019 - 2", "away": "Gimletroll Fagerholt J2019 - 4", "match": "FK Vigør J2019 - 2 – Gimletroll Fagerholt J2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:20", "end": "15:28", "field": "Treerbane 1", "home": "Gimletroll Fagerholt J2019 - 5", "away": "Randesund J2019 - 2", "match": "Gimletroll Fagerholt J2019 - 5 – Randesund J2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:20", "end": "15:28", "field": "Treerbane 2", "home": "Dvergsnes G2019", "away": "Gimletroll G2019 - 10", "match": "Dvergsnes G2019 – Gimletroll G2019 - 10"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:20", "end": "15:28", "field": "Treerbane 3", "home": "FK Donn G2019 - 1", "away": "Våg FK G2019 - 4", "match": "FK Donn G2019 - 1 – Våg FK G2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:30", "end": "15:38", "field": "Treerbane 1", "home": "Gimletroll G2019 - 1", "away": "Våg FK G2019 - 5", "match": "Gimletroll G2019 - 1 – Våg FK G2019 - 5"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:30", "end": "15:38", "field": "Treerbane 2", "home": "Grane Arendal Fotball G2019 - 1", "away": "Greipstad G2019 - 3", "match": "Grane Arendal Fotball G2019 - 1 – Greipstad G2019 - 3"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:30", "end": "15:38", "field": "Treerbane 3", "home": "FK Donn G2019 - 3", "away": "FK Donn G2019 - 2", "match": "FK Donn G2019 - 3 – FK Donn G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:40", "end": "15:48", "field": "Treerbane 1", "home": "Gimletroll Fagerholt J2019 - 6", "away": "FK Våg J2019", "match": "Gimletroll Fagerholt J2019 - 6 – FK Våg J2019"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:40", "end": "15:48", "field": "Treerbane 2", "home": "IK Gimletroll J2019 - 4", "away": "Hånes IF J2019 - 2", "match": "IK Gimletroll J2019 - 4 – Hånes IF J2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:40", "end": "15:48", "field": "Treerbane 3", "home": "Gimletroll G2019 - 3", "away": "Gimletroll G2019 - 2", "match": "Gimletroll G2019 - 3 – Gimletroll G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:50", "end": "15:58", "field": "Treerbane 1", "home": "Grane Arendal Fotball G2019 - 3", "away": "Grane Arendal Fotball G2019 - 2", "match": "Grane Arendal Fotball G2019 - 3 – Grane Arendal Fotball G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:50", "end": "15:58", "field": "Treerbane 2", "home": "FK Donn G2019 - 5", "away": "FK Donn G2019 - 4", "match": "FK Donn G2019 - 5 – FK Donn G2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "15:50", "end": "15:58", "field": "Treerbane 3", "home": "Gimletroll G2019 - 5", "away": "Gimletroll G2019 - 4", "match": "Gimletroll G2019 - 5 – Gimletroll G2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:00", "end": "16:08", "field": "Treerbane 1", "home": "Greipstad G2019 - 1", "away": "Grane Arendal Fotball G2019 - 4", "match": "Greipstad G2019 - 1 – Grane Arendal Fotball G2019 - 4"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:00", "end": "16:08", "field": "Treerbane 2", "home": "FK Donn G2019 - 7", "away": "FK Donn G2019 - 6", "match": "FK Donn G2019 - 7 – FK Donn G2019 - 6"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:00", "end": "16:08", "field": "Treerbane 3", "home": "Gimletroll G2019 - 7", "away": "Gimletroll G2019 - 6", "match": "Gimletroll G2019 - 7 – Gimletroll G2019 - 6"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:10", "end": "16:18", "field": "Treerbane 1", "home": "Våg FK G2019 - 1", "away": "Greipstad G2019 - 2", "match": "Våg FK G2019 - 1 – Greipstad G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:10", "end": "16:18", "field": "Treerbane 2", "home": "Søgne FK Nygård G2019 - 1", "away": "FK Donn G2019 - 8", "match": "Søgne FK Nygård G2019 - 1 – FK Donn G2019 - 8"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:10", "end": "16:18", "field": "Treerbane 3", "home": "Gimletroll G2019 - 9", "away": "Gimletroll G2019 - 8", "match": "Gimletroll G2019 - 9 – Gimletroll G2019 - 8"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:20", "end": "16:28", "field": "Treerbane 1", "home": "Grane Arendal Fotball G2019 - 5", "away": "Våg FK G2019 - 2", "match": "Grane Arendal Fotball G2019 - 5 – Våg FK G2019 - 2"}, {"day": "Lørdag treer", "date": "2026-03-14", "dateLabel": "14.03.2026", "start": "16:20", "end": "16:28", "field": "Treerbane 2", "home": "Våg FK G2019 - 3", "away": "Søgne FK Nygård G2019 - 2", "match": "Våg FK G2019 - 3 – Søgne FK Nygård G2019 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:00", "end": "09:18", "field": "Bane 1", "home": "FK Donn J2015 - 1", "away": "Amazon Grimstad FK J2015 - 3", "match": "FK Donn J2015 - 1 – Amazon Grimstad FK J2015 - 3"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:00", "end": "09:18", "field": "Bane 2", "home": "IL Express J2015 - 1", "away": "FK Donn J2015 - 2", "match": "IL Express J2015 - 1 – FK Donn J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:00", "end": "09:18", "field": "Bane 3", "home": "Hånes IF J2015 - 1", "away": "IL Express J2015 - 2", "match": "Hånes IF J2015 - 1 – IL Express J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:00", "end": "09:18", "field": "Bane 4", "home": "Våg J2015 - 1", "away": "Hånes IF J2015 - 2", "match": "Våg J2015 - 1 – Hånes IF J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:00", "end": "09:18", "field": "Bane 5", "home": "Amazon Grimstad FK J2015 - 1", "away": "Våg J2015 - 2", "match": "Amazon Grimstad FK J2015 - 1 – Våg J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:00", "end": "09:18", "field": "Bane 6", "home": "Vindbjart FK J2015 - 1", "away": "Amazon Grimstad FK J2015 - 2", "match": "Vindbjart FK J2015 - 1 – Amazon Grimstad FK J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:00", "end": "09:18", "field": "Bane 7", "home": "Gimletroll J2015 - 1", "away": "Vindbjart FK J2015 - 2", "match": "Gimletroll J2015 - 1 – Vindbjart FK J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:20", "end": "09:38", "field": "Bane 1", "home": "Birkenes IL J2015 - 1", "away": "Gimletroll J2015 - 2", "match": "Birkenes IL J2015 - 1 – Gimletroll J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:20", "end": "09:38", "field": "Bane 2", "home": "Donn G2015 - 3", "away": "Torridal IL G2015 - 3", "match": "Donn G2015 - 3 – Torridal IL G2015 - 3"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:20", "end": "09:38", "field": "Bane 3", "home": "Søgne FK G2015 - 1", "away": "Donn G2015 - 4", "match": "Søgne FK G2015 - 1 – Donn G2015 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:20", "end": "09:38", "field": "Bane 4", "home": "Randesund IL G2015 - 1", "away": "Søgne FK G2015 - 2", "match": "Randesund IL G2015 - 1 – Søgne FK G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:20", "end": "09:38", "field": "Bane 5", "home": "Donn G2015 - 1", "away": "Randesund IL G2015 - 2", "match": "Donn G2015 - 1 – Randesund IL G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:20", "end": "09:38", "field": "Bane 6", "home": "Høllen FK G2015 - 1", "away": "Donn G2015 - 2", "match": "Høllen FK G2015 - 1 – Donn G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:20", "end": "09:38", "field": "Bane 7", "home": "Søgne FK G2015 - 3", "away": "Høllen FK G2015 - 2", "match": "Søgne FK G2015 - 3 – Høllen FK G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:40", "end": "09:58", "field": "Bane 1", "home": "Randesund IL G2015 - 3", "away": "Søgne FK G2015 - 4", "match": "Randesund IL G2015 - 3 – Søgne FK G2015 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:40", "end": "09:58", "field": "Bane 2", "home": "Donn G2015 - 7", "away": "Randesund IL G2015 - 4", "match": "Donn G2015 - 7 – Randesund IL G2015 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:40", "end": "09:58", "field": "Bane 3", "home": "Torridal IL G2015 - 1", "away": "Donn G2015 - 8", "match": "Torridal IL G2015 - 1 – Donn G2015 - 8"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:40", "end": "09:58", "field": "Bane 4", "home": "Gimletroll G2015 - 1", "away": "Torridal IL G2015 - 2", "match": "Gimletroll G2015 - 1 – Torridal IL G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:40", "end": "09:58", "field": "Bane 5", "home": "Donn G2015 - 5", "away": "Gimletroll G2015 - 2", "match": "Donn G2015 - 5 – Gimletroll G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:40", "end": "09:58", "field": "Bane 6", "home": "Greipstad Idrettslag G2015 - 1", "away": "Donn G2015 - 6", "match": "Greipstad Idrettslag G2015 - 1 – Donn G2015 - 6"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "09:40", "end": "09:58", "field": "Bane 7", "home": "Gimletroll G2015 - 3", "away": "Greipstad Idrettslag G2015 - 2", "match": "Gimletroll G2015 - 3 – Greipstad Idrettslag G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:00", "end": "10:18", "field": "Bane 1", "home": "FK Donn J2015 - 1", "away": "Birkenes IL J2015 - 2", "match": "FK Donn J2015 - 1 – Birkenes IL J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:00", "end": "10:18", "field": "Bane 2", "home": "IL Express J2015 - 1", "away": "Amazon Grimstad FK J2015 - 3", "match": "IL Express J2015 - 1 – Amazon Grimstad FK J2015 - 3"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:00", "end": "10:18", "field": "Bane 3", "home": "Hånes IF J2015 - 1", "away": "FK Donn J2015 - 2", "match": "Hånes IF J2015 - 1 – FK Donn J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:00", "end": "10:18", "field": "Bane 4", "home": "Våg J2015 - 1", "away": "IL Express J2015 - 2", "match": "Våg J2015 - 1 – IL Express J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:00", "end": "10:18", "field": "Bane 5", "home": "Amazon Grimstad FK J2015 - 1", "away": "Hånes IF J2015 - 2", "match": "Amazon Grimstad FK J2015 - 1 – Hånes IF J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:00", "end": "10:18", "field": "Bane 6", "home": "Vindbjart FK J2015 - 1", "away": "Våg J2015 - 2", "match": "Vindbjart FK J2015 - 1 – Våg J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:00", "end": "10:18", "field": "Bane 7", "home": "Gimletroll J2015 - 1", "away": "Amazon Grimstad FK J2015 - 2", "match": "Gimletroll J2015 - 1 – Amazon Grimstad FK J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:20", "end": "10:38", "field": "Bane 1", "home": "Birkenes IL J2015 - 1", "away": "Vindbjart FK J2015 - 2", "match": "Birkenes IL J2015 - 1 – Vindbjart FK J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:20", "end": "10:38", "field": "Bane 2", "home": "Donn G2015 - 3", "away": "Greipstad Idrettslag G2015 - 2", "match": "Donn G2015 - 3 – Greipstad Idrettslag G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:20", "end": "10:38", "field": "Bane 3", "home": "Søgne FK G2015 - 1", "away": "Torridal IL G2015 - 3", "match": "Søgne FK G2015 - 1 – Torridal IL G2015 - 3"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:20", "end": "10:38", "field": "Bane 4", "home": "Randesund IL G2015 - 1", "away": "Donn G2015 - 4", "match": "Randesund IL G2015 - 1 – Donn G2015 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:20", "end": "10:38", "field": "Bane 5", "home": "Donn G2015 - 1", "away": "Søgne FK G2015 - 2", "match": "Donn G2015 - 1 – Søgne FK G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:20", "end": "10:38", "field": "Bane 6", "home": "Høllen FK G2015 - 1", "away": "Randesund IL G2015 - 2", "match": "Høllen FK G2015 - 1 – Randesund IL G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:20", "end": "10:38", "field": "Bane 7", "home": "Søgne FK G2015 - 3", "away": "Donn G2015 - 2", "match": "Søgne FK G2015 - 3 – Donn G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:40", "end": "10:58", "field": "Bane 1", "home": "Randesund IL G2015 - 3", "away": "Høllen FK G2015 - 2", "match": "Randesund IL G2015 - 3 – Høllen FK G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:40", "end": "10:58", "field": "Bane 2", "home": "Donn G2015 - 7", "away": "Søgne FK G2015 - 4", "match": "Donn G2015 - 7 – Søgne FK G2015 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:40", "end": "10:58", "field": "Bane 3", "home": "Torridal IL G2015 - 1", "away": "Randesund IL G2015 - 4", "match": "Torridal IL G2015 - 1 – Randesund IL G2015 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:40", "end": "10:58", "field": "Bane 4", "home": "Gimletroll G2015 - 1", "away": "Donn G2015 - 8", "match": "Gimletroll G2015 - 1 – Donn G2015 - 8"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:40", "end": "10:58", "field": "Bane 5", "home": "Donn G2015 - 5", "away": "Torridal IL G2015 - 2", "match": "Donn G2015 - 5 – Torridal IL G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:40", "end": "10:58", "field": "Bane 6", "home": "Greipstad Idrettslag G2015 - 1", "away": "Gimletroll G2015 - 2", "match": "Greipstad Idrettslag G2015 - 1 – Gimletroll G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "10:40", "end": "10:58", "field": "Bane 7", "home": "Gimletroll G2015 - 3", "away": "Donn G2015 - 6", "match": "Gimletroll G2015 - 3 – Donn G2015 - 6"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:00", "end": "11:18", "field": "Bane 1", "home": "FK Donn J2015 - 1", "away": "Gimletroll J2015 - 2", "match": "FK Donn J2015 - 1 – Gimletroll J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:00", "end": "11:18", "field": "Bane 2", "home": "IL Express J2015 - 1", "away": "Birkenes IL J2015 - 2", "match": "IL Express J2015 - 1 – Birkenes IL J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:00", "end": "11:18", "field": "Bane 3", "home": "Hånes IF J2015 - 1", "away": "Amazon Grimstad FK J2015 - 3", "match": "Hånes IF J2015 - 1 – Amazon Grimstad FK J2015 - 3"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:00", "end": "11:18", "field": "Bane 4", "home": "Våg J2015 - 1", "away": "FK Donn J2015 - 2", "match": "Våg J2015 - 1 – FK Donn J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:00", "end": "11:18", "field": "Bane 5", "home": "Amazon Grimstad FK J2015 - 1", "away": "IL Express J2015 - 2", "match": "Amazon Grimstad FK J2015 - 1 – IL Express J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:00", "end": "11:18", "field": "Bane 6", "home": "Vindbjart FK J2015 - 1", "away": "Hånes IF J2015 - 2", "match": "Vindbjart FK J2015 - 1 – Hånes IF J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:00", "end": "11:18", "field": "Bane 7", "home": "Gimletroll J2015 - 1", "away": "Våg J2015 - 2", "match": "Gimletroll J2015 - 1 – Våg J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:20", "end": "11:38", "field": "Bane 1", "home": "Birkenes IL J2015 - 1", "away": "Amazon Grimstad FK J2015 - 2", "match": "Birkenes IL J2015 - 1 – Amazon Grimstad FK J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:20", "end": "11:38", "field": "Bane 2", "home": "Donn G2015 - 3", "away": "Donn G2015 - 6", "match": "Donn G2015 - 3 – Donn G2015 - 6"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:20", "end": "11:38", "field": "Bane 3", "home": "Søgne FK G2015 - 1", "away": "Greipstad Idrettslag G2015 - 2", "match": "Søgne FK G2015 - 1 – Greipstad Idrettslag G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:20", "end": "11:38", "field": "Bane 4", "home": "Randesund IL G2015 - 1", "away": "Torridal IL G2015 - 3", "match": "Randesund IL G2015 - 1 – Torridal IL G2015 - 3"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:20", "end": "11:38", "field": "Bane 5", "home": "Donn G2015 - 1", "away": "Donn G2015 - 4", "match": "Donn G2015 - 1 – Donn G2015 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:20", "end": "11:38", "field": "Bane 6", "home": "Høllen FK G2015 - 1", "away": "Søgne FK G2015 - 2", "match": "Høllen FK G2015 - 1 – Søgne FK G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:20", "end": "11:38", "field": "Bane 7", "home": "Søgne FK G2015 - 3", "away": "Randesund IL G2015 - 2", "match": "Søgne FK G2015 - 3 – Randesund IL G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:40", "end": "11:58", "field": "Bane 1", "home": "Randesund IL G2015 - 3", "away": "Donn G2015 - 2", "match": "Randesund IL G2015 - 3 – Donn G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:40", "end": "11:58", "field": "Bane 2", "home": "Donn G2015 - 7", "away": "Høllen FK G2015 - 2", "match": "Donn G2015 - 7 – Høllen FK G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:40", "end": "11:58", "field": "Bane 3", "home": "Torridal IL G2015 - 1", "away": "Søgne FK G2015 - 4", "match": "Torridal IL G2015 - 1 – Søgne FK G2015 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:40", "end": "11:58", "field": "Bane 4", "home": "Gimletroll G2015 - 1", "away": "Randesund IL G2015 - 4", "match": "Gimletroll G2015 - 1 – Randesund IL G2015 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:40", "end": "11:58", "field": "Bane 5", "home": "Donn G2015 - 5", "away": "Donn G2015 - 8", "match": "Donn G2015 - 5 – Donn G2015 - 8"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:40", "end": "11:58", "field": "Bane 6", "home": "Greipstad Idrettslag G2015 - 1", "away": "Torridal IL G2015 - 2", "match": "Greipstad Idrettslag G2015 - 1 – Torridal IL G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "11:40", "end": "11:58", "field": "Bane 7", "home": "Gimletroll G2015 - 3", "away": "Gimletroll G2015 - 2", "match": "Gimletroll G2015 - 3 – Gimletroll G2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:00", "end": "12:18", "field": "Bane 1", "home": "Birkenes IL J2015 - 2", "away": "Gimletroll J2015 - 2", "match": "Birkenes IL J2015 - 2 – Gimletroll J2015 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:00", "end": "12:18", "field": "Bane 2", "home": "Vindbjart FK J2015 - 2", "away": "Amazon Grimstad FK J2015 - 3", "match": "Vindbjart FK J2015 - 2 – Amazon Grimstad FK J2015 - 3"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:00", "end": "12:18", "field": "Bane 3", "home": "Gimletroll J2016 - 1", "away": "Amazon J2016", "match": "Gimletroll J2016 - 1 – Amazon J2016"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:00", "end": "12:18", "field": "Bane 4", "home": "FK Donn J2016 - 1", "away": "Gimletroll J2016 - 2", "match": "FK Donn J2016 - 1 – Gimletroll J2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:00", "end": "12:18", "field": "Bane 5", "home": "FK Våg J2016 - 1", "away": "FK Donn J2016 - 2", "match": "FK Våg J2016 - 1 – FK Donn J2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:00", "end": "12:18", "field": "Bane 6", "home": "Greipstad IL J2016 - 1", "away": "FK Våg J2016 - 2", "match": "Greipstad IL J2016 - 1 – FK Våg J2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:00", "end": "12:18", "field": "Bane 7", "home": "FK Våg J2016 - 3", "away": "Greipstad IL J2016 - 2", "match": "FK Våg J2016 - 3 – Greipstad IL J2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:20", "end": "12:38", "field": "Bane 1", "home": "Vindbjart J2016", "away": "FK Donn J2016 - 3", "match": "Vindbjart J2016 – FK Donn J2016 - 3"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:20", "end": "12:38", "field": "Bane 2", "home": "Randesund G2016 - 1", "away": "Vigør Grim G2016", "match": "Randesund G2016 - 1 – Vigør Grim G2016"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:20", "end": "12:38", "field": "Bane 3", "home": "Donn G2016 - 1", "away": "Randesund G2016 - 2", "match": "Donn G2016 - 1 – Randesund G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:20", "end": "12:38", "field": "Bane 4", "home": "FK Vigør G2016 - 1", "away": "Donn G2016 - 2", "match": "FK Vigør G2016 - 1 – Donn G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:20", "end": "12:38", "field": "Bane 5", "home": "Gimletroll G2016 - 1", "away": "FK Vigør G2016 - 2", "match": "Gimletroll G2016 - 1 – FK Vigør G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:20", "end": "12:38", "field": "Bane 6", "home": "Randesund G2016 - 3", "away": "Gimletroll G2016 - 2", "match": "Randesund G2016 - 3 – Gimletroll G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:20", "end": "12:38", "field": "Bane 7", "home": "Donn G2016 - 3", "away": "Randesund G2016 - 4", "match": "Donn G2016 - 3 – Randesund G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:40", "end": "12:58", "field": "Bane 1", "home": "FK Vigør G2016 - 3", "away": "Donn G2016 - 4", "match": "FK Vigør G2016 - 3 – Donn G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:40", "end": "12:58", "field": "Bane 2", "home": "Gimletroll G2016 - 3", "away": "FK Vigør G2016 - 4", "match": "Gimletroll G2016 - 3 – FK Vigør G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:40", "end": "12:58", "field": "Bane 3", "home": "Randesund Holte G2016 - 1", "away": "Gimletroll G2016 - 4", "match": "Randesund Holte G2016 - 1 – Gimletroll G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:40", "end": "12:58", "field": "Bane 4", "home": "Grane Arendal G2016 - 1", "away": "Randesund Holte G2016 - 2", "match": "Grane Arendal G2016 - 1 – Randesund Holte G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:40", "end": "12:58", "field": "Bane 5", "home": "Hisøy G2016 - 1", "away": "Grane Arendal G2016 - 2", "match": "Hisøy G2016 - 1 – Grane Arendal G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:40", "end": "12:58", "field": "Bane 6", "home": "Gimletroll G2016 - 5", "away": "Hisøy G2016 - 2", "match": "Gimletroll G2016 - 5 – Hisøy G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "12:40", "end": "12:58", "field": "Bane 7", "home": "Randesund Holte G2016 - 3", "away": "Gimletroll G2016 - 6", "match": "Randesund Holte G2016 - 3 – Gimletroll G2016 - 6"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:00", "end": "13:18", "field": "Bane 1", "home": "Grane Arendal G2016 - 3", "away": "Randesund Holte G2016 - 4", "match": "Grane Arendal G2016 - 3 – Randesund Holte G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:00", "end": "13:18", "field": "Bane 2", "home": "Hånes G2016 - 1", "away": "Grane Arendal G2016 - 4", "match": "Hånes G2016 - 1 – Grane Arendal G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:00", "end": "13:18", "field": "Bane 3", "home": "Lyngdal IL G2016 - 1", "away": "Hånes G2016 - 2", "match": "Lyngdal IL G2016 - 1 – Hånes G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:00", "end": "13:18", "field": "Bane 4", "home": "Randesund Holte G2016 - 5", "away": "Lyngdal IL G2016 - 2", "match": "Randesund Holte G2016 - 5 – Lyngdal IL G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:00", "end": "13:18", "field": "Bane 5", "home": "Søgne G2016 - 1", "away": "Gimletroll G2016 - 7", "match": "Søgne G2016 - 1 – Gimletroll G2016 - 7"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:00", "end": "13:18", "field": "Bane 6", "home": "Hånes G2016 - 3", "away": "Søgne G2016 - 2", "match": "Hånes G2016 - 3 – Søgne G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:00", "end": "13:18", "field": "Bane 7", "home": "Vindbjart G2016 - 1", "away": "Lia G2016", "match": "Vindbjart G2016 - 1 – Lia G2016"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:20", "end": "13:38", "field": "Bane 1", "home": "Gimletroll J2016 - 1", "away": "FK Donn J2016 - 3", "match": "Gimletroll J2016 - 1 – FK Donn J2016 - 3"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:20", "end": "13:38", "field": "Bane 2", "home": "FK Donn J2016 - 1", "away": "Amazon J2016", "match": "FK Donn J2016 - 1 – Amazon J2016"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:20", "end": "13:38", "field": "Bane 3", "home": "FK Våg J2016 - 1", "away": "Gimletroll J2016 - 2", "match": "FK Våg J2016 - 1 – Gimletroll J2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:20", "end": "13:38", "field": "Bane 4", "home": "Greipstad IL J2016 - 1", "away": "FK Donn J2016 - 2", "match": "Greipstad IL J2016 - 1 – FK Donn J2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:20", "end": "13:38", "field": "Bane 5", "home": "FK Våg J2016 - 3", "away": "FK Våg J2016 - 2", "match": "FK Våg J2016 - 3 – FK Våg J2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:20", "end": "13:38", "field": "Bane 6", "home": "Vindbjart J2016", "away": "Greipstad IL J2016 - 2", "match": "Vindbjart J2016 – Greipstad IL J2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:20", "end": "13:38", "field": "Bane 7", "home": "Randesund G2016 - 1", "away": "Vindbjart G2016 - 2", "match": "Randesund G2016 - 1 – Vindbjart G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:40", "end": "13:58", "field": "Bane 1", "home": "Donn G2016 - 1", "away": "Vigør Grim G2016", "match": "Donn G2016 - 1 – Vigør Grim G2016"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:40", "end": "13:58", "field": "Bane 2", "home": "FK Vigør G2016 - 1", "away": "Randesund G2016 - 2", "match": "FK Vigør G2016 - 1 – Randesund G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:40", "end": "13:58", "field": "Bane 3", "home": "Gimletroll G2016 - 1", "away": "Donn G2016 - 2", "match": "Gimletroll G2016 - 1 – Donn G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:40", "end": "13:58", "field": "Bane 4", "home": "Randesund G2016 - 3", "away": "FK Vigør G2016 - 2", "match": "Randesund G2016 - 3 – FK Vigør G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:40", "end": "13:58", "field": "Bane 5", "home": "Donn G2016 - 3", "away": "Gimletroll G2016 - 2", "match": "Donn G2016 - 3 – Gimletroll G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:40", "end": "13:58", "field": "Bane 6", "home": "FK Vigør G2016 - 3", "away": "Randesund G2016 - 4", "match": "FK Vigør G2016 - 3 – Randesund G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "13:40", "end": "13:58", "field": "Bane 7", "home": "Gimletroll G2016 - 3", "away": "Donn G2016 - 4", "match": "Gimletroll G2016 - 3 – Donn G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:00", "end": "14:18", "field": "Bane 1", "home": "Randesund Holte G2016 - 1", "away": "FK Vigør G2016 - 4", "match": "Randesund Holte G2016 - 1 – FK Vigør G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:00", "end": "14:18", "field": "Bane 2", "home": "Grane Arendal G2016 - 1", "away": "Gimletroll G2016 - 4", "match": "Grane Arendal G2016 - 1 – Gimletroll G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:00", "end": "14:18", "field": "Bane 3", "home": "Hisøy G2016 - 1", "away": "Randesund Holte G2016 - 2", "match": "Hisøy G2016 - 1 – Randesund Holte G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:00", "end": "14:18", "field": "Bane 4", "home": "Gimletroll G2016 - 5", "away": "Grane Arendal G2016 - 2", "match": "Gimletroll G2016 - 5 – Grane Arendal G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:00", "end": "14:18", "field": "Bane 5", "home": "Randesund Holte G2016 - 3", "away": "Hisøy G2016 - 2", "match": "Randesund Holte G2016 - 3 – Hisøy G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:00", "end": "14:18", "field": "Bane 6", "home": "Grane Arendal G2016 - 3", "away": "Gimletroll G2016 - 6", "match": "Grane Arendal G2016 - 3 – Gimletroll G2016 - 6"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:00", "end": "14:18", "field": "Bane 7", "home": "Hånes G2016 - 1", "away": "Randesund Holte G2016 - 4", "match": "Hånes G2016 - 1 – Randesund Holte G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:20", "end": "14:38", "field": "Bane 1", "home": "Lyngdal IL G2016 - 1", "away": "Grane Arendal G2016 - 4", "match": "Lyngdal IL G2016 - 1 – Grane Arendal G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:20", "end": "14:38", "field": "Bane 2", "home": "Randesund Holte G2016 - 5", "away": "Hånes G2016 - 2", "match": "Randesund Holte G2016 - 5 – Hånes G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:20", "end": "14:38", "field": "Bane 3", "home": "Søgne G2016 - 1", "away": "Lyngdal IL G2016 - 2", "match": "Søgne G2016 - 1 – Lyngdal IL G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:20", "end": "14:38", "field": "Bane 4", "home": "Hånes G2016 - 3", "away": "Gimletroll G2016 - 7", "match": "Hånes G2016 - 3 – Gimletroll G2016 - 7"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:20", "end": "14:38", "field": "Bane 5", "home": "Vindbjart G2016 - 1", "away": "Søgne G2016 - 2", "match": "Vindbjart G2016 - 1 – Søgne G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:20", "end": "14:38", "field": "Bane 6", "home": "Gimletroll J2016 - 1", "away": "Greipstad IL J2016 - 2", "match": "Gimletroll J2016 - 1 – Greipstad IL J2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:20", "end": "14:38", "field": "Bane 7", "home": "FK Donn J2016 - 1", "away": "FK Donn J2016 - 3", "match": "FK Donn J2016 - 1 – FK Donn J2016 - 3"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:40", "end": "14:58", "field": "Bane 1", "home": "FK Våg J2016 - 1", "away": "Amazon J2016", "match": "FK Våg J2016 - 1 – Amazon J2016"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:40", "end": "14:58", "field": "Bane 2", "home": "Greipstad IL J2016 - 1", "away": "Gimletroll J2016 - 2", "match": "Greipstad IL J2016 - 1 – Gimletroll J2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:40", "end": "14:58", "field": "Bane 3", "home": "FK Våg J2016 - 3", "away": "FK Donn J2016 - 2", "match": "FK Våg J2016 - 3 – FK Donn J2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:40", "end": "14:58", "field": "Bane 4", "home": "Vindbjart J2016", "away": "FK Våg J2016 - 2", "match": "Vindbjart J2016 – FK Våg J2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:40", "end": "14:58", "field": "Bane 5", "home": "Randesund G2016 - 1", "away": "Lia G2016", "match": "Randesund G2016 - 1 – Lia G2016"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:40", "end": "14:58", "field": "Bane 6", "home": "Donn G2016 - 1", "away": "Vindbjart G2016 - 2", "match": "Donn G2016 - 1 – Vindbjart G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "14:40", "end": "14:58", "field": "Bane 7", "home": "FK Vigør G2016 - 1", "away": "Vigør Grim G2016", "match": "FK Vigør G2016 - 1 – Vigør Grim G2016"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:00", "end": "15:18", "field": "Bane 1", "home": "Gimletroll G2016 - 1", "away": "Randesund G2016 - 2", "match": "Gimletroll G2016 - 1 – Randesund G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:00", "end": "15:18", "field": "Bane 2", "home": "Randesund G2016 - 3", "away": "Donn G2016 - 2", "match": "Randesund G2016 - 3 – Donn G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:00", "end": "15:18", "field": "Bane 3", "home": "Donn G2016 - 3", "away": "FK Vigør G2016 - 2", "match": "Donn G2016 - 3 – FK Vigør G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:00", "end": "15:18", "field": "Bane 4", "home": "FK Vigør G2016 - 3", "away": "Gimletroll G2016 - 2", "match": "FK Vigør G2016 - 3 – Gimletroll G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:00", "end": "15:18", "field": "Bane 5", "home": "Gimletroll G2016 - 3", "away": "Randesund G2016 - 4", "match": "Gimletroll G2016 - 3 – Randesund G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:00", "end": "15:18", "field": "Bane 6", "home": "Randesund Holte G2016 - 1", "away": "Donn G2016 - 4", "match": "Randesund Holte G2016 - 1 – Donn G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:00", "end": "15:18", "field": "Bane 7", "home": "Grane Arendal G2016 - 1", "away": "FK Vigør G2016 - 4", "match": "Grane Arendal G2016 - 1 – FK Vigør G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:20", "end": "15:38", "field": "Bane 1", "home": "Hisøy G2016 - 1", "away": "Gimletroll G2016 - 4", "match": "Hisøy G2016 - 1 – Gimletroll G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:20", "end": "15:38", "field": "Bane 2", "home": "Gimletroll G2016 - 5", "away": "Randesund Holte G2016 - 2", "match": "Gimletroll G2016 - 5 – Randesund Holte G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:20", "end": "15:38", "field": "Bane 3", "home": "Randesund Holte G2016 - 3", "away": "Grane Arendal G2016 - 2", "match": "Randesund Holte G2016 - 3 – Grane Arendal G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:20", "end": "15:38", "field": "Bane 4", "home": "Grane Arendal G2016 - 3", "away": "Hisøy G2016 - 2", "match": "Grane Arendal G2016 - 3 – Hisøy G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:20", "end": "15:38", "field": "Bane 5", "home": "Hånes G2016 - 1", "away": "Gimletroll G2016 - 6", "match": "Hånes G2016 - 1 – Gimletroll G2016 - 6"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:20", "end": "15:38", "field": "Bane 6", "home": "Lyngdal IL G2016 - 1", "away": "Randesund Holte G2016 - 4", "match": "Lyngdal IL G2016 - 1 – Randesund Holte G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:20", "end": "15:38", "field": "Bane 7", "home": "Randesund Holte G2016 - 5", "away": "Grane Arendal G2016 - 4", "match": "Randesund Holte G2016 - 5 – Grane Arendal G2016 - 4"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:40", "end": "15:58", "field": "Bane 1", "home": "Søgne G2016 - 1", "away": "Hånes G2016 - 2", "match": "Søgne G2016 - 1 – Hånes G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:40", "end": "15:58", "field": "Bane 2", "home": "Hånes G2016 - 3", "away": "Lyngdal IL G2016 - 2", "match": "Hånes G2016 - 3 – Lyngdal IL G2016 - 2"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:40", "end": "15:58", "field": "Bane 3", "home": "Vindbjart G2016 - 1", "away": "Gimletroll G2016 - 7", "match": "Vindbjart G2016 - 1 – Gimletroll G2016 - 7"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:40", "end": "15:58", "field": "Bane 4", "home": "Vindbjart G2016 - 2", "away": "Lia G2016", "match": "Vindbjart G2016 - 2 – Lia G2016"}, {"day": "Søndag", "date": "2026-03-15", "dateLabel": "15.03.2026", "start": "15:40", "end": "15:58", "field": "Bane 5", "home": "Søgne G2016 - 2", "away": "Hisøy G2016 - 2", "match": "Søgne G2016 - 2 – Hisøy G2016 - 2"}];
+
+    const searchEl = document.getElementById('search');
+    const dayEl = document.getElementById('day');
+    const fieldEl = document.getElementById('field');
+    const tbody = document.getElementById('tbody');
+    const emptyState = document.getElementById('emptyState');
+    const countText = document.getElementById('countText');
+    const liveNote = document.getElementById('liveNote');
+    const shownCount = document.getElementById('shownCount');
+    const totalCount = document.getElementById('totalCount');
+    const currentRound = document.getElementById('currentRound');
+    const currentRoundSub = document.getElementById('currentRoundSub');
+    const clockNow = document.getElementById('clockNow');
+    const clockDate = document.getElementById('clockDate');
+    const updatedAt = document.getElementById('updatedAt');
+    const footerText = document.getElementById('footerText');
+    const jumpBtn = document.getElementById('jumpBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const DAY_NAMES = ['Søndag','Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag'];
+    const MONTH_NAMES = ['januar','februar','mars','april','mai','juni','juli','august','september','oktober','november','desember'];
+
+    function parseMatchDate(match) {
+      return new Date(`${match.date}T${match.start}:00`);
+    }
+    function parseMatchEnd(match) {
+      return new Date(`${match.date}T${match.end}:00`);
+    }
+    function pad(num) {
+      return String(num).padStart(2, '0');
+    }
+    function formatClock(d) {
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    function formatFullDate(d) {
+      return `${DAY_NAMES[d.getDay()]} ${d.getDate()}. ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    const enriched = matches
+      .map((m, i) => ({
+        ...m,
+        id: i + 1,
+        startDate: parseMatchDate(m),
+        endDate: parseMatchEnd(m),
+        roundKey: `${m.date}|${m.start}`,
+      }))
+      .sort((a, b) => a.startDate - b.startDate || a.field.localeCompare(b.field, 'no'));
+
+    function getLiveRoundInfo(now) {
+      const futureRounds = [...new Set(
+        enriched
+          .filter(m => m.endDate >= now)
+          .map(m => m.roundKey)
+      )];
+      const currentRoundKey = futureRounds[0] || null;
+
+      return {
+        currentRoundKey,
+        liveNow: enriched.some(m => m.startDate <= now && m.endDate >= now),
+      };
+    }
+
+    function getStatus(match, now, currentRoundKey) {
+      if (match.endDate < now) {
+        return { cls: 'done', label: 'Ferdigspilt' };
+      }
+      if (match.roundKey === currentRoundKey) {
+        if (match.startDate <= now && match.endDate >= now) {
+          return { cls: 'next', label: 'Spilles nå' };
+        }
+        return { cls: 'next', label: 'Neste runde' };
+      }
+      return { cls: 'coming', label: 'Kommende' };
+    }
+
+    function fillFilters() {
+      const days = [...new Set(enriched.map(m => m.day))];
+      const fields = [...new Set(enriched.map(m => m.field))];
+      for (const day of days) {
+        const opt = document.createElement('option');
+        opt.value = day;
+        opt.textContent = day;
+        dayEl.appendChild(opt);
+      }
+      for (const field of fields) {
+        const opt = document.createElement('option');
+        opt.value = field;
+        opt.textContent = field;
+        fieldEl.appendChild(opt);
+      }
+    }
+
+    function filteredMatches() {
+      const q = searchEl.value.trim().toLowerCase();
+      const day = dayEl.value;
+      const field = fieldEl.value;
+
+      return enriched.filter(m => {
+        if (day && m.day !== day) return false;
+        if (field && m.field !== field) return false;
+        if (!q) return true;
+        const hay = `${m.home} ${m.away} ${m.match} ${m.field} ${m.day}`.toLowerCase();
+        return hay.includes(q);
+      });
+    }
+
+    function updateHeader(now, visible, roundInfo) {
+      clockNow.textContent = formatClock(now);
+      clockDate.textContent = formatFullDate(now);
+      updatedAt.textContent = formatClock(now);
+      shownCount.textContent = visible.length;
+      totalCount.textContent = `av ${enriched.length} kamper`;
+
+      const roundMatches = visible.filter(m => m.roundKey === roundInfo.currentRoundKey);
+      const uniqueRoundsVisible = [...new Set(visible.map(m => m.roundKey))];
+
+      if (roundInfo.currentRoundKey && roundMatches.length) {
+        const first = roundMatches[0];
+        currentRound.textContent = `${first.dateLabel} kl. ${first.start}`;
+        currentRoundSub.textContent = roundInfo.liveNow ? 'Kampene i denne runden spilles nå' : 'Dette er neste runde i visningen';
+      } else if (roundInfo.currentRoundKey) {
+        const fromAll = enriched.find(m => m.roundKey === roundInfo.currentRoundKey);
+        currentRound.textContent = fromAll ? `${fromAll.dateLabel} kl. ${fromAll.start}` : '–';
+        currentRoundSub.textContent = 'Aktuell runde finnes, men er filtrert bort';
+      } else {
+        currentRound.textContent = 'Ingen igjen';
+        currentRoundSub.textContent = visible.length ? 'Alle viste kamper er ferdigspilt' : 'Ingen kamper i dette filteret';
+      }
+
+      countText.textContent = visible.length
+        ? `Viser ${visible.length} kamper fordelt på ${uniqueRoundsVisible.length} runder.`
+        : 'Ingen kamper å vise.';
+
+      if (!visible.length) {
+        liveNote.textContent = '';
+      } else if (roundInfo.liveNow) {
+        liveNote.textContent = 'Gul markering viser rundene som spilles akkurat nå.';
+      } else {
+        liveNote.textContent = 'Gul markering viser neste runde som kommer.';
+      }
+
+      footerText.textContent = 'Bygget fra kampoppsettet og oppdaterer automatisk uten at siden må lastes inn på nytt.';
+    }
+
+    function render(scrollToFocus = false) {
+      const now = new Date();
+      const roundInfo = getLiveRoundInfo(now);
+      const visible = filteredMatches();
+
+      tbody.innerHTML = '';
+      emptyState.hidden = visible.length !== 0;
+
+      let focusRow = null;
+
+      visible.forEach(match => {
+        const status = getStatus(match, now, roundInfo.currentRoundKey);
+        const tr = document.createElement('tr');
+        tr.className = status.cls;
+        tr.dataset.matchId = match.id;
+
+        if (!focusRow && status.cls === 'next') {
+          tr.classList.add('focus-target');
+          focusRow = tr;
+        }
+
+        tr.innerHTML = `
+          <td>${match.dateLabel}<div class="subtext">${match.day}</div></td>
+          <td>${match.start}–${match.end}</td>
+          <td>${match.field}</td>
+          <td>
+            <div class="match">${match.match}</div>
+            <div class="subtext">${match.home} mot ${match.away}</div>
+          </td>
+          <td><span class="status">${status.label}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateHeader(now, visible, roundInfo);
+
+      if (scrollToFocus) {
+        setTimeout(() => {
+          const target = focusRow || tbody.querySelector('tr:last-child');
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 60);
+      }
+    }
+
+    fillFilters();
+    render(true);
+
+    [searchEl, dayEl, fieldEl].forEach(el => {
+      el.addEventListener('input', () => render(false));
+      el.addEventListener('change', () => render(false));
+    });
+
+    jumpBtn.addEventListener('click', () => render(true));
+    resetBtn.addEventListener('click', () => {
+      searchEl.value = '';
+      dayEl.value = '';
+      fieldEl.value = '';
+      render(true);
+    });
+
+    setInterval(() => render(false), 30000);
+  </script>
+</body>
+</html>
